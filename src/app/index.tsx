@@ -1,7 +1,7 @@
 import * as Device from 'expo-device';
 import { Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { View, Text } from 'react-native';
 import { AnimatedIcon } from '@/components/animated-icon';
 import { HintRow } from '@/components/hint-row';
 import { ThemedText } from '@/components/themed-text';
@@ -36,8 +36,12 @@ export default function HomeScreen() {
           <AnimatedIcon />
           <ThemedText type="title" style={styles.title}>
             Welcome to&nbsp;Expo
-          </ThemedText>
+          </ThemedText> 
         </ThemedView>
+
+               <View className="bg-blue-500 p-6 rounded-xl">
+  <Text className="text-black text-xl font-bold">NativeWind works</Text>
+</View>
 
         <ThemedText type="code" style={styles.code}>
           get started
