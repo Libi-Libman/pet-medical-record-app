@@ -5,7 +5,14 @@ import { createClient } from "@supabase/supabase-js"
 const supabase = createClient(
   process.env.EXPO_PUBLIC_SUPABASE_URL!,
   process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-  { auth: { storage: AsyncStorage, autoRefreshToken: true, persistSession: true } }
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  }
 )
 
 export default supabase
