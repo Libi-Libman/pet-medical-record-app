@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   return (
@@ -22,11 +23,17 @@ export default function HomeScreen() {
         </View>
 
         <View className="flex-row gap-2 mb-5">
-          <Pressable className="flex-1 h-10 rounded-lg bg-blue-50 border border-blue-300 items-center justify-center flex-row gap-1.5">
+          <Pressable
+            onPress={() => router.push('/quick-add/capture')}
+            className="flex-1 h-10 rounded-lg bg-blue-50 border border-blue-300 items-center justify-center flex-row gap-1.5"
+          >
             <Feather name="plus" size={15} color="#0C447C" />
             <Text className="text-xs font-semibold text-blue-900">Add entry</Text>
           </Pressable>
-          <Pressable className="flex-1 h-10 rounded-lg border border-blue-300 items-center justify-center flex-row gap-1.5">
+          <Pressable
+            onPress={() => router.push('/vet-summary')}
+            className="flex-1 h-10 rounded-lg border border-blue-300 items-center justify-center flex-row gap-1.5"
+          >
             <Feather name="file-text" size={15} color="#0C447C" />
             <Text className="text-xs font-semibold text-blue-900">Vet summary</Text>
           </Pressable>
@@ -34,20 +41,26 @@ export default function HomeScreen() {
 
         <Text className="text-sm font-semibold text-neutral-900 mb-2">How she's doing</Text>
         <View className="gap-2 mb-5">
-          <View className="flex-row items-center gap-2.5 bg-amber-100 rounded-2xl px-3 py-2.5">
+          <Pressable
+            onPress={() => router.push('/episode-detail')}
+            className="flex-row items-center gap-2.5 bg-amber-100 rounded-2xl px-3 py-2.5"
+          >
             <Feather name="activity" size={18} color="#92400E" />
             <View>
               <Text className="text-xs font-semibold text-amber-900">Cruciate ligament rupture</Text>
               <Text className="text-[11px] text-amber-900">Recovering · activity restricted</Text>
             </View>
-          </View>
-          <View className="flex-row items-center gap-2.5 bg-green-100 rounded-2xl px-3 py-2.5">
+          </Pressable>
+          <Pressable
+            onPress={() => router.push('/episode-detail')}
+            className="flex-row items-center gap-2.5 bg-green-100 rounded-2xl px-3 py-2.5"
+          >
             <Feather name="heart" size={18} color="#166534" />
             <View>
               <Text className="text-xs font-semibold text-green-900">Arthritis</Text>
               <Text className="text-[11px] text-green-900">Chronic, well managed · injection in 3 days</Text>
             </View>
-          </View>
+          </Pressable>
         </View>
 
         <Text className="text-sm font-semibold text-neutral-900 mb-2">Today's medications</Text>
@@ -76,11 +89,10 @@ export default function HomeScreen() {
             <Text className="text-[11px] text-blue-900">Tierklinik Schwabing · 20 Aug</Text>
           </View>
         </View>
-
-        <View className="flex-row justify-between items-center mb-2">
+        <Pressable onPress={() => router.push('/timeline')} className="flex-row justify-between items-center mb-2">
           <Text className="text-sm font-semibold text-neutral-900">Recent activity</Text>
           <Text className="text-xs text-blue-800">View all</Text>
-        </View>
+        </Pressable>
         <View className="gap-1.5">
           <Text className="text-xs text-neutral-500">15 Jul · Sutures removed, wound reopened</Text>
           <Text className="text-xs text-neutral-500">2 Jul · Surgery performed</Text>
