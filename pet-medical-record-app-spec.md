@@ -92,14 +92,14 @@ Design constraint that overrides everything else: capture must be at least as fa
 
 Locked after a consistency pass across all screens:
 
-| Color | Meaning |
-|---|---|
-| Amber | Condition actively being treated or recovering |
-| Green | Chronic condition, stable and well managed |
-| Purple | Medications — consistently, on every screen |
-| Blue | Actions, navigation, links, AI-extracted data tags, current/ongoing status |
-| Red | Allergies, complications, anything safety-critical |
-| Gray | Structural: categories, completed items, chrome |
+| Color  | Meaning                                                                    |
+| ------ | -------------------------------------------------------------------------- |
+| Amber  | Condition actively being treated or recovering                             |
+| Green  | Chronic condition, stable and well managed                                 |
+| Purple | Medications — consistently, on every screen                                |
+| Blue   | Actions, navigation, links, AI-extracted data tags, current/ongoing status |
+| Red    | Allergies, complications, anything safety-critical                         |
+| Gray   | Structural: categories, completed items, chrome                            |
 
 All tint/text pairings were checked against WCAG AA (4.5:1 for normal text) and passed with substantial margin (6.2:1–9.0:1) in both light and dark mode using the platform's tint-background + darkest-stop-text convention. Re-verify against the actual brand hex values once those are chosen during implementation — this validated the pattern, not final pixel colors.
 

@@ -1,6 +1,6 @@
-import "react-native-url-polyfill/auto"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { createClient } from "@supabase/supabase-js"
+import 'react-native-url-polyfill/auto';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   process.env.EXPO_PUBLIC_SUPABASE_URL!,
@@ -13,6 +13,6 @@ const supabase = createClient(
       detectSessionInUrl: false,
     },
   }
-)
+);
 
-export default supabase
+export default supabase;
