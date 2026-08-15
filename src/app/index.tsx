@@ -24,7 +24,7 @@ export default function HomeScreen() {
 
         <View className="flex-row gap-2 mb-5">
           <Pressable
-            onPress={() => router.push('/quick-add/capture')}
+            onPress={() => {router.push('/episode-detail')}}
             className="flex-1 h-10 rounded-lg bg-blue-50 border border-blue-300 items-center justify-center flex-row gap-1.5"
           >
             <Feather name="plus" size={15} color="#0C447C" />
