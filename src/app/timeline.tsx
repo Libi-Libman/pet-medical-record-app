@@ -78,14 +78,7 @@ export default function Timeline() {
         <Text className="text-lg font-semibold text-gray-900">Full timeline</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0, flexShrink: 0 }}
-        className="px-4 py-3"
-        contentContainerStyle={{ gap: 8, alignItems: 'center' }}
-      >
-        {' '}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} className="px-4 py-3" contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
         {episodes.map((ep) => (
           <Pressable
             key={ep}
