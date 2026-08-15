@@ -25,7 +25,7 @@ export default function HomeScreen() {
         <View className="mb-5 flex-row gap-2">
           <Pressable
             onPress={() => {
-              router.push('/episode-detail');
+               router.push('/quick-add/capture');
             }}
             className="h-10 flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-300 bg-blue-50"
           >
