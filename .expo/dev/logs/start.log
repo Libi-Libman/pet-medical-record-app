@@ -3479,3 +3479,119 @@
 {"_e":"metro:bundling:progress","_t":1786818546323,"id":"48","progress":0,"total":1,"current":0}
 {"_e":"metro:bundling:done","_t":1786818546391,"id":"48","total":1,"ms":67.4766}
 {"_e":"metro:client_log","_t":1786818547137,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786819020491,"id":"4d","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786819020491,"id":"4d","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786819020563,"id":"4d","total":1,"ms":71.6976}
+{"_e":"metro:client_log","_t":1786819021265,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786821065877,"id":"4j","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786821065877,"id":"4j","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821065878,"id":"4j","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786821065965,"id":"4j","total":1,"ms":87.8436}
+{"_e":"metro:client_log","_t":1786821066622,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786821101997,"id":"4n","platform":"web","environment":null,"entry":"src\\app\\quick-add\\capture.tsx"}
+{"_e":"metro:bundling:started","_t":1786821102096,"id":"4o","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786821102096,"id":"4o","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786821102169,"id":"4o","total":1,"ms":72.286}
+{"_e":"metro:client_log","_t":1786821103105,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786821115378,"id":"4t","platform":"web","environment":null,"entry":"src\\app\\quick-add\\review.tsx"}
+{"_e":"metro:bundling:started","_t":1786821115442,"id":"4u","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786821115442,"id":"4u","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786821115490,"id":"4u","total":1,"ms":48.2449}
+{"_e":"metro:client_log","_t":1786821116193,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786821128156,"id":"4z","platform":"web","environment":null,"entry":"src\\app\\quick-add\\reminder.tsx"}
+{"_e":"metro:bundling:started","_t":1786821128244,"id":"50","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786821128244,"id":"50","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786821128295,"id":"50","total":1,"ms":51.247}
+{"_e":"metro:client_log","_t":1786821129055,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786821133428,"id":"56","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786821133429,"id":"56","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786821133494,"id":"56","total":1,"ms":65.3656}
+{"_e":"metro:client_log","_t":1786821133969,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786821398263,"id":"5a","platform":"web","environment":null,"entry":"src\\app\\index.tsx"}
+{"_e":"metro:bundling:started","_t":1786821401225,"id":"5c","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786821401226,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401228,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401328,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401538,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401638,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401738,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401839,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821401939,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821402039,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821402139,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821402239,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786821402343,"id":"5c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786821402426,"id":"5c","total":1,"ms":1200.3904}
+{"_e":"metro:client_log","_t":1786821403041,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786954974646,"id":"5h","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786954974646,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954974653,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954974820,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954974901,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975168,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975276,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975376,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975476,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975577,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975677,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975779,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954975879,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954976043,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786954976351,"id":"5h","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786954976429,"id":"5h","total":1,"ms":1783.0543}
+{"_e":"metro:client_log","_t":1786954977081,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1786954978594,"level":"warn","data":["An error occurred in the <QuickAddCapture(./quick-add/capture.tsx)> component.\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://react.dev/link/error-boundaries to learn more about error boundaries.\n"]}
+{"_e":"metro:client_log","_t":1786954978720,"level":"error","data":["[ReferenceError: useMedicationDraft is not defined]","\n\n\u001b[1mCode: capture.tsx\u001b[22m\n\u001b[0m \u001b[90m 12 |\u001b[39m   \u001b[36mconst\u001b[39m [date\u001b[33m,\u001b[39m setDate] \u001b[33m=\u001b[39m useState(\u001b[36mnew\u001b[39m \u001b[33mDate\u001b[39m())\u001b[33m;\u001b[39m\n \u001b[90m 13 |\u001b[39m   \u001b[36mconst\u001b[39m [showPicker\u001b[33m,\u001b[39m setShowPicker] \u001b[33m=\u001b[39m useState(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 14 |\u001b[39m   \u001b[36mconst\u001b[39m { draftMeds\u001b[33m,\u001b[39m clearDraftMeds } \u001b[33m=\u001b[39m useMedicationDraft()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 15 |\u001b[39m\n \u001b[90m 16 |\u001b[39m   \u001b[36mconst\u001b[39m isToday \u001b[33m=\u001b[39m date\u001b[33m.\u001b[39mtoDateString() \u001b[33m===\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mDate\u001b[39m()\u001b[33m.\u001b[39mtoDateString()\u001b[33m;\u001b[39m\n \u001b[90m 17 |\u001b[39m   \u001b[36mconst\u001b[39m formattedDate \u001b[33m=\u001b[39m isToday\u001b[0m\n\u001b[1mCall Stack\u001b[22m\n\u001b[90m  QuickAddCapture (src\\app\\quick-add\\capture.tsx:14:41)\u001b[39m","\n\n\u001b[1mCode: _layout.tsx\u001b[22m\n\u001b[0m \u001b[90m 10 |\u001b[39m   \u001b[36mreturn\u001b[39m (\n \u001b[90m 11 |\u001b[39m     \u001b[33m<\u001b[39m\u001b[33mThemeProvider\u001b[39m value\u001b[33m=\u001b[39m{colorScheme \u001b[33m===\u001b[39m \u001b[32m'dark'\u001b[39m \u001b[33m?\u001b[39m \u001b[33mDarkTheme\u001b[39m \u001b[33m:\u001b[39m \u001b[33mDefaultTheme\u001b[39m}\u001b[33m>\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 12 |\u001b[39m       \u001b[33m<\u001b[39m\u001b[33mStack\u001b[39m screenOptions\u001b[33m=\u001b[39m{{ headerShown\u001b[33m:\u001b[39m \u001b[36mfalse\u001b[39m }} \u001b[33m/\u001b[39m\u001b[33m>\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[33m<\u001b[39m\u001b[33m/\u001b[39m\u001b[33mThemeProvider\u001b[39m\u001b[33m>\u001b[39m\n \u001b[90m 14 |\u001b[39m   )\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m }\u001b[0m\n\u001b[1mCall Stack\u001b[22m\n\u001b[90m  RootLayout (src\\app\\_layout.tsx:12:7)\u001b[39m"]}
+{"_e":"metro:bundling:started","_t":1786954999202,"id":"5q","platform":"web","environment":null,"entry":"src\\app\\quick-add\\capture.tsx"}
+{"_e":"metro:bundling:started","_t":1786955002706,"id":"5r","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786955002706,"id":"5r","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786955002776,"id":"5r","total":1,"ms":70.0967}
+{"_e":"metro:client_log","_t":1786955003494,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786980604259,"id":"5w","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786980604262,"id":"5w","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786980604387,"id":"5w","total":1,"ms":125.6531}
+{"_e":"metro:client_log","_t":1786980605194,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786983413717,"id":"5z","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786983413717,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983413721,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983413898,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983413962,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414259,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414361,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414464,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414564,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414664,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414764,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414864,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983414964,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415065,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415165,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415268,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415578,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415690,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415736,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983415896,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983416125,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:progress","_t":1786983416229,"id":"5z","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786983416307,"id":"5z","total":1,"ms":2590.5107}
+{"_e":"metro:client_log","_t":1786983416827,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1786983418767,"level":"warn","data":["Cannot record touch end without a touch start.\n","Touch End: {\"identifier\":0,\"pageX\":1701,\"pageY\":24,\"timestamp\":5145.800000011921}\n","Touch Bank: []"]}
+{"_e":"metro:client_log","_t":1786983424215,"level":"warn","data":["An error occurred in the <QuickAddCapture(./quick-add/capture.tsx)> component.\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://react.dev/link/error-boundaries to learn more about error boundaries.\n"]}
+{"_e":"metro:client_log","_t":1786983424245,"level":"error","data":["[Error: useMedicationDraft must be used within MedicationDraftProvider]","\n\n\u001b[1mCode: medication-draft.tsx\u001b[22m\n\u001b[0m \u001b[90m 34 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36mfunction\u001b[39m useMedicationDraft() {\n \u001b[90m 35 |\u001b[39m   \u001b[36mconst\u001b[39m ctx \u001b[33m=\u001b[39m useContext(\u001b[33mMedicationDraftContext\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 36 |\u001b[39m   \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mctx) \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'useMedicationDraft must be used within MedicationDraftProvider'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 37 |\u001b[39m   \u001b[36mreturn\u001b[39m ctx\u001b[33m;\u001b[39m\n \u001b[90m 38 |\u001b[39m }\u001b[0m\n\u001b[1mCall Stack\u001b[22m\n\u001b[90m  useMedicationDraft (src\\context\\medication-draft.tsx:36:19)\u001b[39m\n\u001b[90m  QuickAddCapture (src\\app\\quick-add\\capture.tsx:14:59)\u001b[39m","\n\n\u001b[1mCode: _layout.tsx\u001b[22m\n\u001b[0m \u001b[90m 10 |\u001b[39m   \u001b[36mreturn\u001b[39m (\n \u001b[90m 11 |\u001b[39m     \u001b[33m<\u001b[39m\u001b[33mThemeProvider\u001b[39m value\u001b[33m=\u001b[39m{colorScheme \u001b[33m===\u001b[39m \u001b[32m'dark'\u001b[39m \u001b[33m?\u001b[39m \u001b[33mDarkTheme\u001b[39m \u001b[33m:\u001b[39m \u001b[33mDefaultTheme\u001b[39m}\u001b[33m>\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 12 |\u001b[39m       \u001b[33m<\u001b[39m\u001b[33mStack\u001b[39m screenOptions\u001b[33m=\u001b[39m{{ headerShown\u001b[33m:\u001b[39m \u001b[36mfalse\u001b[39m }} \u001b[33m/\u001b[39m\u001b[33m>\u001b[39m\n \u001b[90m    |\u001b[39m       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 13 |\u001b[39m     \u001b[33m<\u001b[39m\u001b[33m/\u001b[39m\u001b[33mThemeProvider\u001b[39m\u001b[33m>\u001b[39m\n \u001b[90m 14 |\u001b[39m   )\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m }\u001b[0m\n\u001b[1mCall Stack\u001b[22m\n\u001b[90m  RootLayout (src\\app\\_layout.tsx:12:7)\u001b[39m"]}
+{"_e":"metro:bundling:started","_t":1786983494486,"id":"69","platform":"web","environment":null,"entry":"src\\app\\_layout.tsx"}
+{"_e":"metro:bundling:started","_t":1786983572568,"id":"6a","platform":"web","environment":null,"entry":"src\\app\\index.tsx"}
+{"_e":"metro:bundling:started","_t":1786983627145,"id":"6b","platform":"web","environment":null,"entry":"src\\app\\index.tsx"}
+{"_e":"metro:bundling:started","_t":1786983791756,"id":"6c","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786983791756,"id":"6c","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786983791813,"id":"6c","total":1,"ms":56.0892}
+{"_e":"metro:client_log","_t":1786983792425,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1786983798074,"level":"warn","data":["DateTimePicker is not supported on: web"]}
+{"_e":"metro:bundling:started","_t":1786983805627,"id":"6i","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786983805627,"id":"6i","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786983805689,"id":"6i","total":1,"ms":62.3073}
+{"_e":"metro:client_log","_t":1786983806436,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:bundling:started","_t":1786983817076,"id":"6n","platform":"web","environment":null,"entry":"node_modules\\expo-router\\entry.js"}
+{"_e":"metro:bundling:progress","_t":1786983817076,"id":"6n","progress":0,"total":1,"current":0}
+{"_e":"metro:bundling:done","_t":1786983817138,"id":"6n","total":1,"ms":61.5182}
+{"_e":"metro:client_log","_t":1786983817876,"level":"log","data":["Running application \"main\" with appParams:\n","{\"hydrate\": undefined, \"rootTag\": \"#root\"}","\nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."]}
+{"_e":"metro:client_log","_t":1786983823276,"level":"warn","data":["DateTimePicker is not supported on: web"]}

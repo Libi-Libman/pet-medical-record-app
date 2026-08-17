@@ -85,8 +85,14 @@ export default function HomeScreen() {
             <Text className="flex-1 text-xs text-neutral-900">Gabapentin · 20:00</Text>
             <Feather name="circle" size={18} color="#A8A29E" />
           </View>
+           <Pressable
+              onPress={() => router.push('/quick-add/add-medication')}
+              className="flex-row items-center gap-2 py-2"
+            >
+              <Feather name="plus-circle" size={16} color="#1D4ED8" />
+              <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
+            </Pressable>
         </View>
-
         <Text className="mb-2 text-sm font-semibold text-neutral-900">Coming up</Text>
         <View className="mb-5 flex-row items-center gap-2.5 rounded-2xl bg-blue-50 px-3 py-2.5">
           <Feather name="calendar" size={18} color="#0C447C" />
