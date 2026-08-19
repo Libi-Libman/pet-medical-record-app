@@ -52,7 +52,7 @@ export default function HomeScreen() {
               <Text className="text-xs font-semibold text-amber-900">
                 Cruciate ligament rupture
               </Text>
-              <Text className="text-[11px] text-amber-900">Recovering · activity restricted</Text>
+              <Text className="text-xs text-amber-900">Recovering · activity restricted</Text>
             </View>
           </Pressable>
           <Pressable
@@ -62,7 +62,7 @@ export default function HomeScreen() {
             <Feather name="heart" size={18} color="#166534" />
             <View>
               <Text className="text-xs font-semibold text-green-900">Arthritis</Text>
-              <Text className="text-[11px] text-green-900">
+              <Text className="text-xs text-green-900">
                 Chronic, well managed · injection in 3 days
               </Text>
             </View>
@@ -98,7 +98,7 @@ export default function HomeScreen() {
           <Feather name="calendar" size={18} color="#0C447C" />
           <View>
             <Text className="text-xs font-semibold text-blue-900">Follow-up recheck</Text>
-            <Text className="text-[11px] text-blue-900">Tierklinik Schwabing · 20 Aug</Text>
+            <Text className="text-xs text-blue-900">Tierklinik Schwabing · 20 Aug</Text>
           </View>
         </View>
         <Pressable
