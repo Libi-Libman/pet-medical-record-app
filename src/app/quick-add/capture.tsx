@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable } from 'react-native';
+import { View, Text, TextInput, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -49,18 +49,39 @@ export default function QuickAddCapture() {
             <Feather name="calendar" size={16} color="#5F5E5A" />
             <Text className="text-sm text-gray-900">{formattedDate}</Text>
           </Pressable>
-
           {showPicker && (
-            <DateTimePicker
-              value={date}
-              mode="date"
-              display="default"
-              maximumDate={new Date()}
-              onChange={(event, selectedDate) => {
-                setShowPicker(false);
-                if (selectedDate) setDate(selectedDate);
-              }}
-            />
+            Platform.OS === 'web' ? (
+              // @ts-ignore - raw HTML input, web only
+              <input
+                type="date"
+                value={date.toISOString().split('T')[0]}
+                max={new Date().toISOString().split('T')[0]}
+                onChange={(e: any) => {
+                  const [y, m, d] = e.target.value.split('-').map(Number);
+                  setDate(new Date(y, m - 1, d));
+                  setShowPicker(false);
+                }}
+                style={{
+                  marginTop: 8,
+                  padding: 8,
+                  borderRadius: 8,
+                  border: '1px solid #E5E7EB',
+                  fontSize: 14,
+                }}
+              />
+            ) : (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                maximumDate={new Date()}
+                onValueChange={(event, selectedDate) => {
+                  setShowPicker(false);
+                  if (selectedDate) setDate(selectedDate);
+                }}
+                onDismiss={() => setShowPicker(false)}
+              />
+            )
           )}
         </View>
 
