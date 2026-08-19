@@ -2,6 +2,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { SectionHeader } from '@/components/section-header';
 
 export default function HomeScreen() {
   return (
@@ -41,7 +42,7 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <Text className="mb-2 text-sm font-semibold text-neutral-900">How she's doing</Text>
+        <SectionHeader>How she's doing</SectionHeader>
         <View className="mb-5 gap-2">
           <Pressable
             onPress={() => router.push('/episode-detail')}
@@ -69,7 +70,7 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <Text className="mb-2 text-sm font-semibold text-neutral-900">Today's medications</Text>
+        <SectionHeader>Today's medications</SectionHeader>
         <View className="mb-5 gap-1.5">
           <View className="flex-row items-center gap-2.5 rounded-lg border border-neutral-200 px-2.5 py-2">
             <View className="h-7 w-7 items-center justify-center rounded-full bg-purple-100">
@@ -93,7 +94,7 @@ export default function HomeScreen() {
               <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
             </Pressable>
         </View>
-        <Text className="mb-2 text-sm font-semibold text-neutral-900">Coming up</Text>
+        <SectionHeader>Coming up</SectionHeader>
         <View className="mb-5 flex-row items-center gap-2.5 rounded-2xl bg-blue-50 px-3 py-2.5">
           <Feather name="calendar" size={18} color="#0C447C" />
           <View>
@@ -105,7 +106,7 @@ export default function HomeScreen() {
           onPress={() => router.push('/timeline')}
           className="mb-2 flex-row items-center justify-between"
         >
-          <Text className="text-sm font-semibold text-neutral-900">Recent activity</Text>
+          <SectionHeader>Recent activity</SectionHeader>
           <Text className="text-xs text-blue-800">View all</Text>
         </Pressable>
         <View className="gap-1.5">
