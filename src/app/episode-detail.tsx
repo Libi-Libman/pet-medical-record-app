@@ -62,16 +62,16 @@ export default function EpisodeDetail() {
         </Text>
         <View className="mb-4 flex-row flex-wrap items-center gap-1.5">
           <View className="rounded-md bg-amber-100 px-2 py-0.5">
-            <Text className="text-[11px] text-amber-900">Active · recovering</Text>
+            <Text className="text-xs text-amber-900">Active · recovering</Text>
           </View>
           <View className="rounded-md bg-neutral-100 px-2 py-0.5">
-            <Text className="text-[11px] text-neutral-600">Orthopedic</Text>
+            <Text className="text-xs text-neutral-600">Orthopedic</Text>
           </View>
-          <Text className="text-[11px] text-neutral-400">Since Jun 2026</Text>
+          <Text className="text-xs text-neutral-400">Since Jun 2026</Text>
         </View>
 
         <View className="mb-5 rounded-lg bg-neutral-50 px-3 py-2.5">
-          <Text className="mb-0.5 text-[10px] text-neutral-400">Current status</Text>
+          <Text className="mb-0.5 text-xs text-neutral-400">Current status</Text>
           <Text className="text-xs text-neutral-600">Recovering, activity restricted</Text>
         </View>
 
@@ -89,7 +89,7 @@ export default function EpisodeDetail() {
                 <Text className={`text-xs ${e.danger ? 'text-red-700' : 'text-neutral-900'}`}>
                   {e.title}
                 </Text>
-                <Text className="text-[10px] text-neutral-400">{e.sub}</Text>
+                <Text className="text-xs text-neutral-400">{e.sub}</Text>
               </View>
             </View>
           ))}
@@ -106,11 +106,11 @@ export default function EpisodeDetail() {
                 <MaterialCommunityIcons name="pill" size={13} color="#5B21B6" />
                 <View>
                   <Text className="text-xs text-neutral-900">{m.name}</Text>
-                  <Text className="text-[10px] text-neutral-400">{m.sub}</Text>
+                  <Text className="text-xs text-neutral-400">{m.sub}</Text>
                 </View>
               </View>
               <View className={`${m.tagBg} rounded-md px-2 py-0.5`}>
-                <Text className={`text-[10px] ${m.tagText}`}>{m.tag}</Text>
+                <Text className={`text-xs ${m.tagText}`}>{m.tag}</Text>
               </View>
             </View>
           ))}
@@ -126,7 +126,7 @@ export default function EpisodeDetail() {
               >
                 <Feather name="file" size={20} color="#737373" />
               </View>
-              <Text className="text-center text-[9px] text-neutral-400" numberOfLines={2}>
+              <Text className="text-center text-xs text-neutral-400" numberOfLines={2}>
                 {d}
               </Text>
             </View>

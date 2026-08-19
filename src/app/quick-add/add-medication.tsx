@@ -31,8 +31,6 @@ export default function AddMedication() {
         <Pressable
           onPress={() => router.back()}
           hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
         >
           <Feather name="arrow-left" size={22} color="#2C2C2A" />
         </Pressable>
@@ -46,7 +44,7 @@ export default function AddMedication() {
             value={name}
             onChangeText={setName}
             placeholder="e.g. Carprofen"
-            accessibilityLabel="Medication name"
+            placeholderTextColor="#6B7280"
             className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900"
           />
         </View>
@@ -57,7 +55,7 @@ export default function AddMedication() {
             value={dose}
             onChangeText={setDose}
             placeholder="e.g. 75mg"
-            accessibilityLabel="Dose"
+            placeholderTextColor="#6B7280"
             className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900"
           />
         </View>
@@ -69,9 +67,6 @@ export default function AddMedication() {
               <Pressable
                 key={p}
                 onPress={() => setFrequency(p)}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: frequency === p }}
-                accessibilityLabel={p}
                 className={`px-3 py-2 rounded-full border ${frequency === p ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'}`}
               >
                 <Text className={`text-xs font-medium ${frequency === p ? 'text-white' : 'text-gray-700'}`}>{p}</Text>
@@ -85,9 +80,6 @@ export default function AddMedication() {
         <Pressable
           disabled={!canAdd}
           onPress={handleAdd}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canAdd }}
-          accessibilityLabel="Add medication"
           className={`flex-row items-center justify-center gap-2 py-3.5 rounded-2xl ${canAdd ? 'bg-purple-600' : 'bg-gray-200'}`}
         >
           <Feather name="plus" size={16} color={canAdd ? 'white' : '#9CA3AF'} />

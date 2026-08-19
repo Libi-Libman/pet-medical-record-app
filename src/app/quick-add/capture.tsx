@@ -6,13 +6,13 @@ import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMedicationDraft } from '@/context/medication-draft';
 
+
 export default function QuickAddCapture() {
   const [note, setNote] = useState('');
   const [hasPhoto, setHasPhoto] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const { draftMeds, clearDraftMeds } = useMedicationDraft();
-
   const isToday = date.toDateString() === new Date().toDateString();
   const formattedDate = isToday
     ? `Today, ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
@@ -32,8 +32,6 @@ export default function QuickAddCapture() {
         <Pressable
           onPress={() => router.back()}
           hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Close"
         >
           <Feather name="x" size={22} color="#2C2C2A" />
         </Pressable>
@@ -46,9 +44,6 @@ export default function QuickAddCapture() {
           <Text className="text-xs text-gray-500 mb-1">Date</Text>
           <Pressable
             onPress={() => setShowPicker(true)}
-            accessibilityRole="button"
-            accessibilityLabel={`Date, ${formattedDate}`}
-            accessibilityHint="Opens date picker"
             className="flex-row items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5"
           >
             <Feather name="calendar" size={16} color="#5F5E5A" />
@@ -76,7 +71,7 @@ export default function QuickAddCapture() {
             onChangeText={setNote}
             multiline
             placeholder="e.g. Limping on back left leg since this morning"
-            accessibilityLabel="What happened"
+            placeholderTextColor="#6B7280"
             className="flex-1 bg-gray-50 rounded-xl px-3 py-3 text-sm text-gray-900"
             style={{ textAlignVertical: 'top', minHeight: 120 }}
           />
@@ -85,10 +80,7 @@ export default function QuickAddCapture() {
         <View className="flex-row gap-2">
           <Pressable
             onPress={() => setHasPhoto(true)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: hasPhoto }}
-            accessibilityLabel={hasPhoto ? 'Photo attached' : 'Attach a photo'}
-            className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl px-3 py-3 border ${hasPhoto ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-100'}`}
+             className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl px-3 py-3 border ${hasPhoto ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-100'}`}
           >
             <Feather name="camera" size={16} color={hasPhoto ? '#1D4ED8' : '#5F5E5A'} />
             <Text className={`text-xs ${hasPhoto ? 'text-blue-900 font-medium' : 'text-gray-600'}`}>
@@ -98,8 +90,6 @@ export default function QuickAddCapture() {
 
           <Pressable
             onPress={() => router.push('/quick-add/add-medication?from=capture')}
-            accessibilityRole="button"
-            accessibilityLabel="Add medication"
             className="flex-1 flex-row items-center justify-center gap-2 rounded-xl px-3 py-3 border bg-purple-50 border-purple-200"
           >
             <Feather name="plus-circle" size={16} color="#6B21A8" />
@@ -124,9 +114,6 @@ export default function QuickAddCapture() {
         <Pressable
           disabled={!canSave}
           onPress={handleSave}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canSave }}
-          accessibilityLabel="Save"
           className={`items-center py-3.5 rounded-2xl ${canSave ? 'bg-blue-600' : 'bg-gray-200'}`}
         >
           <Text className={`font-semibold ${canSave ? 'text-white' : 'text-gray-400'}`}>Save</Text>

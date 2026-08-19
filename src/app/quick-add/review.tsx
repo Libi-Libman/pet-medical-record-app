@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 const Tag = () => (
   <View className="flex-row items-center gap-1 self-start px-2 py-0.5 rounded-full bg-blue-100">
     <Feather name="file-text" size={10} color="#1D4ED8" />
-    <Text className="text-[10px] text-blue-800 font-medium">from document</Text>
+    <Text className="text-xs text-blue-800 font-medium">from document</Text>
   </View>
 );
 
