@@ -118,7 +118,7 @@ export default function Timeline() {
               </Text>
               {event.episode && (
                 <View className="mt-1 self-start rounded-full bg-gray-200 px-2 py-0.5">
-                  <Text className="10px] text-gray-700">{event.episode}</Text>
+                  <Text className="text-xs text-gray-700">{event.episode}</Text>
                 </View>
               )}
             </View>

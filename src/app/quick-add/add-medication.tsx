@@ -62,7 +62,7 @@ export default function AddMedication() {
 
         <View>
           <Text className="text-xs text-gray-500 mb-2">Frequency</Text>
-          <View className="flex-row flex-wrap gap-2" accessibilityRole="radiogroup">
+          <View className="flex-row flex-wrap gap-2">
             {presets.map((p) => (
               <Pressable
                 key={p}
