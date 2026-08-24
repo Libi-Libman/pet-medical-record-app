@@ -3,6 +3,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SectionHeader } from '@/components/section-header';
+import { QuickActionButton } from '@/components/quick-action-button';
+
 
 export default function HomeScreen() {
   return (
@@ -24,22 +26,17 @@ export default function HomeScreen() {
         </View>
 
         <View className="mb-5 flex-row gap-2">
-          <Pressable
-            onPress={() => {
-               router.push('/quick-add/capture');
-            }}
-            className="h-10 flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-300 bg-blue-50"
-          >
-            <Feather name="plus" size={15} color="#0C447C" />
-            <Text className="text-xs font-semibold text-blue-900">Add entry</Text>
-          </Pressable>
-          <Pressable
+          <QuickActionButton
+            icon="plus"
+            label="Add entry"
+            filled
+            onPress={() => router.push('/quick-add/capture')}
+          />
+          <QuickActionButton
+            icon="file-text"
+            label="Vet summary"
             onPress={() => router.push('/vet-summary')}
-            className="h-10 flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-300"
-          >
-            <Feather name="file-text" size={15} color="#0C447C" />
-            <Text className="text-xs font-semibold text-blue-900">Vet summary</Text>
-          </Pressable>
+          />
         </View>
 
         <SectionHeader>How she's doing</SectionHeader>
