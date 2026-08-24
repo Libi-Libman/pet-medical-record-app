@@ -4,6 +4,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SectionHeader } from '@/components/section-header';
 import { QuickActionButton } from '@/components/quick-action-button';
+import { ConditionCard } from '@/components/condition-card';
 
 
 export default function HomeScreen() {
@@ -41,30 +42,20 @@ export default function HomeScreen() {
 
         <SectionHeader>How she's doing</SectionHeader>
         <View className="mb-5 gap-2">
-          <Pressable
+           <ConditionCard
+            status="recovering"
+            icon="activity"
+            title="Cruciate ligament rupture"
+            subtitle="Recovering · activity restricted"
             onPress={() => router.push('/episode-detail')}
-            className="flex-row items-center gap-2.5 rounded-2xl bg-amber-100 px-3 py-2.5"
-          >
-            <Feather name="activity" size={18} color="#92400E" />
-            <View>
-              <Text className="text-xs font-semibold text-amber-900">
-                Cruciate ligament rupture
-              </Text>
-              <Text className="text-xs text-amber-900">Recovering · activity restricted</Text>
-            </View>
-          </Pressable>
-          <Pressable
+          />
+          <ConditionCard
+            status="chronic"
+            icon="heart"
+            title="Arthritis"
+            subtitle="Chronic, well managed · injection in 3 days"
             onPress={() => router.push('/episode-detail')}
-            className="flex-row items-center gap-2.5 rounded-2xl bg-green-100 px-3 py-2.5"
-          >
-            <Feather name="heart" size={18} color="#166534" />
-            <View>
-              <Text className="text-xs font-semibold text-green-900">Arthritis</Text>
-              <Text className="text-xs text-green-900">
-                Chronic, well managed · injection in 3 days
-              </Text>
-            </View>
-          </Pressable>
+          />
         </View>
 
         <SectionHeader>Today's medications</SectionHeader>
