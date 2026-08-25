@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { SectionHeader } from '@/components/section-header';
 import { QuickActionButton } from '@/components/quick-action-button';
 import { ConditionCard } from '@/components/condition-card';
-
+import { MedicationRow } from '@/components/medication-row';
 
 export default function HomeScreen() {
   return (
@@ -60,27 +60,15 @@ export default function HomeScreen() {
 
         <SectionHeader>Today's medications</SectionHeader>
         <View className="mb-5 gap-1.5">
-          <View className="flex-row items-center gap-2.5 rounded-lg border border-neutral-200 px-2.5 py-2">
-            <View className="h-7 w-7 items-center justify-center rounded-full bg-purple-100">
-              <MaterialCommunityIcons name="pill" size={13} color="#5B21B6" />
-            </View>
-            <Text className="flex-1 text-xs text-neutral-900">Gabapentin · 8:00</Text>
-            <Feather name="check-circle" size={18} color="#166534" />
-          </View>
-          <View className="flex-row items-center gap-2.5 rounded-lg border border-neutral-200 px-2.5 py-2">
-            <View className="h-7 w-7 items-center justify-center rounded-full bg-purple-100">
-              <MaterialCommunityIcons name="pill" size={13} color="#5B21B6" />
-            </View>
-            <Text className="flex-1 text-xs text-neutral-900">Gabapentin · 20:00</Text>
-            <Feather name="circle" size={18} color="#A8A29E" />
-          </View>
-           <Pressable
-              onPress={() => router.push('/quick-add/add-medication')}
-              className="flex-row items-center gap-2 py-2"
-            >
-              <Feather name="plus-circle" size={16} color="#1D4ED8" />
-              <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
-            </Pressable>
+          <MedicationRow name="Gabapentin" time="8:00" taken />
+          <MedicationRow name="Gabapentin" time="20:00" taken={false} />
+          <Pressable
+            onPress={() => router.push('/quick-add/add-medication')}
+            className="flex-row items-center gap-2 py-2"
+          >
+            <Feather name="plus-circle" size={16} color="#1D4ED8" />
+            <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
+          </Pressable>
         </View>
         <SectionHeader>Coming up</SectionHeader>
         <View className="mb-5 flex-row items-center gap-2.5 rounded-2xl bg-blue-50 px-3 py-2.5">
