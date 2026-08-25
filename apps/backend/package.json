@@ -1,5 +1,5 @@
 {
-  "name": "@pet-med/backend",
+  "name": "@petapp/backend",
   "module": "index.ts",
   "type": "module",
   "private": true,

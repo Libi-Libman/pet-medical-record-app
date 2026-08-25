@@ -1,7 +1,7 @@
+import { PetCard } from '@/components/pet-list/PetCard';
 import { useOwnerPets } from '@/lib/queries/useOwnerPets';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PetCard } from './components/PetCard';
 
 const PetList = () => {
   const { data: pets = [] } = useOwnerPets();

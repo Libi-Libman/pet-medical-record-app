@@ -4,14 +4,43 @@
   "workspaces": {
     "": {
       "name": "petapp",
+      "devDependencies": {
+        "prettier": "^3.9.6",
+        "prettier-plugin-tailwindcss": "^0.8.1",
+      },
+    },
+    "apps/backend": {
+      "name": "@petapp/backend",
+      "dependencies": {
+        "@trpc/server": "^11.18.0",
+        "dotenv": "^17.4.2",
+        "drizzle-orm": "^1.0.0-rc.4",
+        "postgres": "^3.4.9",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@faker-js/faker": "^10.6.0",
+        "@types/bun": "latest",
+        "drizzle-kit": "^1.0.0-rc.4",
+        "drizzle-seed": "^0.3.1",
+        "pg": "^8.23.0",
+      },
+      "peerDependencies": {
+        "typescript": "^7",
+      },
+    },
+    "apps/frontend": {
+      "name": "@petapp/frontend",
       "dependencies": {
         "@expo/ui": "~57.0.10",
         "@expo/vector-icons": "^15.0.2",
-        "@pet-med/frontend": "workspace:*",
+        "@petapp/backend": "workspace:*",
         "@react-native-async-storage/async-storage": "2.2.0",
         "@react-native-community/datetimepicker": "9.1.0",
         "@supabase/supabase-js": "^2.112.3",
         "@tanstack/react-query": "^5.102.3",
+        "@trpc/client": "^11.18.0",
+        "@trpc/tanstack-react-query": "^11.18.0",
         "date-fns": "^4.4.0",
         "expo": "~57.0.12",
         "expo-constants": "~57.0.10",
@@ -40,42 +69,9 @@
         "tailwindcss": "^3.4.19",
       },
       "devDependencies": {
+        "@types/bun": "latest",
         "@types/react": "~19.2.2",
-        "prettier": "^3.9.6",
-        "prettier-plugin-tailwindcss": "^0.8.1",
         "typescript": "~7.0.2",
-      },
-    },
-    "apps/backend": {
-      "name": "@pet-med/backend",
-      "dependencies": {
-        "@trpc/server": "^11.18.0",
-        "dotenv": "^17.4.2",
-        "drizzle-orm": "^1.0.0-rc.4",
-        "postgres": "^3.4.9",
-        "zod": "^4.4.3",
-      },
-      "devDependencies": {
-        "@faker-js/faker": "^10.6.0",
-        "@types/bun": "latest",
-        "drizzle-kit": "^1.0.0-rc.4",
-        "drizzle-seed": "^0.3.1",
-        "pg": "^8.23.0",
-      },
-      "peerDependencies": {
-        "typescript": "^7",
-      },
-    },
-    "apps/frontend": {
-      "name": "@pet-med/frontend",
-      "dependencies": {
-        "@pet-med/backend": "workspace:*",
-        "@tanstack/react-query": "^5.102.3",
-        "@trpc/client": "^11.18.0",
-        "@trpc/tanstack-react-query": "^11.18.0",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
       },
       "peerDependencies": {
         "typescript": "^7",
@@ -385,9 +381,9 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
-    "@pet-med/backend": ["@pet-med/backend@workspace:apps/backend"],
+    "@petapp/backend": ["@petapp/backend@workspace:apps/backend"],
 
-    "@pet-med/frontend": ["@pet-med/frontend@workspace:apps/frontend"],
+    "@petapp/frontend": ["@petapp/frontend@workspace:apps/frontend"],
 
     "@radix-ui/primitive": ["@radix-ui/primitive@1.1.7", "", {}, "sha512-rqWnm76nYT8HoNNqEjpgJ7Pw/DrBj5iBTrmEPo6HTX5+VJyBNOqTdv4g89G63HuR5g0AaENoAcH7Is5fF2kZ8Q=="],
 
@@ -921,7 +917,7 @@
 
     "jimp-compact": ["jimp-compact@0.16.1", "", {}, "sha512-dZ6Ra7u1G8c4Letq/B5EzAxj4tLFHL+cGtdpR+PVm4yzPDj+lCk+AbivWt1eOM+ikzkowtyV7qSqX6qr3t71Ww=="],
 
-    "jiti": ["jiti@1.21.7", "", { "bin": "bin/jiti.js" }, "sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A=="],
+    "jiti": ["jiti@2.7.0", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ=="],
 
     "js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
 
@@ -1485,8 +1481,6 @@
 
     "connect/debug": ["debug@2.6.9", "", { "dependencies": { "ms": "2.0.0" } }, "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA=="],
 
-    "drizzle-kit/jiti": ["jiti@2.7.0", "", { "bin": { "jiti": "lib/jiti-cli.mjs" } }, "sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ=="],
-
     "expo-modules-autolinking/commander": ["commander@7.2.0", "", {}, "sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw=="],
 
     "fast-glob/glob-parent": ["glob-parent@5.1.2", "", { "dependencies": { "is-glob": "^4.0.1" } }, "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="],
@@ -1554,6 +1548,8 @@
     "strip-ansi/ansi-regex": ["ansi-regex@4.1.1", "", {}, "sha512-ILlv4k/3f6vfQ4OoP2AGvirOktlQ98ZEL1k9FaQjxa3L1abBgbuTDAdPOpvbGncC0BTVQrl+OM8xZGK6tWXt7g=="],
 
     "sucrase/commander": ["commander@4.1.1", "", {}, "sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA=="],
+
+    "tailwindcss/jiti": ["jiti@1.21.7", "", { "bin": "bin/jiti.js" }, "sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A=="],
 
     "terser/commander": ["commander@2.20.3", "", {}, "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ=="],
 

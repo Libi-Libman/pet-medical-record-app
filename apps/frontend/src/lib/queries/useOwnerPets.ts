@@ -1,4 +1,4 @@
-import { useTRPC } from '@pet-med/frontend';
+import { useTRPC } from '@/lib/trpc';
 import { useQuery } from '@tanstack/react-query';
 import { OwnerPet } from '../../types/owner-pet';
 

@@ -4,7 +4,8 @@ import { useColorScheme } from 'react-native';
 import '../../global.css';
 
 import { MedicationDraftProvider } from '@/context/medication-draft';
-import { initQueryClient, initTRPCClient, TRPCProvider } from '@pet-med/frontend';
+import { initQueryClient } from '@/lib/query-client';
+import { initTRPCClient, TRPCProvider } from '@/lib/trpc';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 SplashScreen.preventAutoHideAsync();
