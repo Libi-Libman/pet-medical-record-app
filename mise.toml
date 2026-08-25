@@ -1,2 +1,9 @@
+monorepo_root = true
+
 [tools]
 bun = "latest"
+
+[monorepo]
+config_roots = [
+    "apps/*"
+]

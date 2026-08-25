@@ -1,0 +1,7 @@
+[tasks.dev]
+description = "Run the backend in dev mode"
+run = "bun run dev"
+
+[tasks.seed]
+description = "Seed you local Database"
+run = "bun run seed"
