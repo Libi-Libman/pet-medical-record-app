@@ -3,6 +3,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SectionHeader } from '@/components/section-header';
+import { QuickActionButton } from '@/components/quick-action-button';
+import { ConditionCard } from '@/components/condition-card';
+import { MedicationRow } from '@/components/medication-row';
 
 export default function HomeScreen() {
   return (
@@ -24,75 +27,48 @@ export default function HomeScreen() {
         </View>
 
         <View className="mb-5 flex-row gap-2">
-          <Pressable
-            onPress={() => {
-               router.push('/quick-add/capture');
-            }}
-            className="h-10 flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-300 bg-blue-50"
-          >
-            <Feather name="plus" size={15} color="#0C447C" />
-            <Text className="text-xs font-semibold text-blue-900">Add entry</Text>
-          </Pressable>
-          <Pressable
+          <QuickActionButton
+            icon="plus"
+            label="Add entry"
+            filled
+            onPress={() => router.push('/quick-add/capture')}
+          />
+          <QuickActionButton
+            icon="file-text"
+            label="Vet summary"
             onPress={() => router.push('/vet-summary')}
-            className="h-10 flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border border-blue-300"
-          >
-            <Feather name="file-text" size={15} color="#0C447C" />
-            <Text className="text-xs font-semibold text-blue-900">Vet summary</Text>
-          </Pressable>
+          />
         </View>
 
         <SectionHeader>How she's doing</SectionHeader>
         <View className="mb-5 gap-2">
-          <Pressable
+           <ConditionCard
+            status="recovering"
+            icon="activity"
+            title="Cruciate ligament rupture"
+            subtitle="Recovering · activity restricted"
             onPress={() => router.push('/episode-detail')}
-            className="flex-row items-center gap-2.5 rounded-2xl bg-amber-100 px-3 py-2.5"
-          >
-            <Feather name="activity" size={18} color="#92400E" />
-            <View>
-              <Text className="text-xs font-semibold text-amber-900">
-                Cruciate ligament rupture
-              </Text>
-              <Text className="text-xs text-amber-900">Recovering · activity restricted</Text>
-            </View>
-          </Pressable>
-          <Pressable
+          />
+          <ConditionCard
+            status="chronic"
+            icon="heart"
+            title="Arthritis"
+            subtitle="Chronic, well managed · injection in 3 days"
             onPress={() => router.push('/episode-detail')}
-            className="flex-row items-center gap-2.5 rounded-2xl bg-green-100 px-3 py-2.5"
-          >
-            <Feather name="heart" size={18} color="#166534" />
-            <View>
-              <Text className="text-xs font-semibold text-green-900">Arthritis</Text>
-              <Text className="text-xs text-green-900">
-                Chronic, well managed · injection in 3 days
-              </Text>
-            </View>
-          </Pressable>
+          />
         </View>
 
         <SectionHeader>Today's medications</SectionHeader>
         <View className="mb-5 gap-1.5">
-          <View className="flex-row items-center gap-2.5 rounded-lg border border-neutral-200 px-2.5 py-2">
-            <View className="h-7 w-7 items-center justify-center rounded-full bg-purple-100">
-              <MaterialCommunityIcons name="pill" size={13} color="#5B21B6" />
-            </View>
-            <Text className="flex-1 text-xs text-neutral-900">Gabapentin · 8:00</Text>
-            <Feather name="check-circle" size={18} color="#166534" />
-          </View>
-          <View className="flex-row items-center gap-2.5 rounded-lg border border-neutral-200 px-2.5 py-2">
-            <View className="h-7 w-7 items-center justify-center rounded-full bg-purple-100">
-              <MaterialCommunityIcons name="pill" size={13} color="#5B21B6" />
-            </View>
-            <Text className="flex-1 text-xs text-neutral-900">Gabapentin · 20:00</Text>
-            <Feather name="circle" size={18} color="#A8A29E" />
-          </View>
-           <Pressable
-              onPress={() => router.push('/quick-add/add-medication')}
-              className="flex-row items-center gap-2 py-2"
-            >
-              <Feather name="plus-circle" size={16} color="#1D4ED8" />
-              <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
-            </Pressable>
+          <MedicationRow name="Gabapentin" time="8:00" taken />
+          <MedicationRow name="Gabapentin" time="20:00" taken={false} />
+          <Pressable
+            onPress={() => router.push('/quick-add/add-medication')}
+            className="flex-row items-center gap-2 py-2"
+          >
+            <Feather name="plus-circle" size={16} color="#1D4ED8" />
+            <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
+          </Pressable>
         </View>
         <SectionHeader>Coming up</SectionHeader>
         <View className="mb-5 flex-row items-center gap-2.5 rounded-2xl bg-blue-50 px-3 py-2.5">
