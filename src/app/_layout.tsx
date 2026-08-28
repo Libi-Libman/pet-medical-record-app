@@ -5,8 +5,12 @@ import "../../global.css";
 
 import { AuthProvider, useAuth } from '@/context/auth';
 import { MedicationDraftProvider } from '@/context/medication-draft';
+import { initQueryClient } from '@/lib/query-client';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 SplashScreen.preventAutoHideAsync();
+
+const queryClient = initQueryClient();
 
 function RootNavigator() {
   const { session, loading } = useAuth();
@@ -25,6 +29,7 @@ function RootNavigator() {
         <Stack.Screen name="episode-detail" />
         <Stack.Screen name="timeline" />
         <Stack.Screen name="vet-summary" />
+        <Stack.Screen name="pet-list/index" />
         <Stack.Screen name="quick-add/capture" />
         <Stack.Screen name="quick-add/add-medication" />
         <Stack.Screen name="quick-add/review" />
@@ -37,12 +42,14 @@ function RootNavigator() {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   return (
-    <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <MedicationDraftProvider>
-          <RootNavigator />
-        </MedicationDraftProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <MedicationDraftProvider>
+            <RootNavigator />
+          </MedicationDraftProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

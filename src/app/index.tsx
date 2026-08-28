@@ -6,14 +6,22 @@ import { SectionHeader } from '@/components/section-header';
 import { QuickActionButton } from '@/components/quick-action-button';
 import { ConditionCard } from '@/components/condition-card';
 import { MedicationRow } from '@/components/medication-row';
+import { useAuth } from '@/context/auth';
 
 export default function HomeScreen() {
+  const { signOut } = useAuth();
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1 px-4" contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="mb-4 mt-2 flex-row items-center justify-between">
           <Text className="text-xs text-neutral-400">Good morning</Text>
-          <Feather name="bell" size={18} color="#0C447C" />
+          <View className="flex-row items-center gap-4">
+            <Feather name="bell" size={18} color="#0C447C" />
+            <Pressable onPress={signOut} hitSlop={10}>
+              <Feather name="log-out" size={18} color="#6B7280" />
+            </Pressable>
+          </View>
         </View>
 
         <View className="mb-4 flex-row items-center gap-3">
