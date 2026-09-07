@@ -18,6 +18,13 @@ export type DraftMedication = {
   reminder?: MedicationReminder;
 };
 
+// A medication that's been through the full quick-add flow and had its
+// reminder set — this is what the Home screen shows under "Today's
+// medications". There's no real `medications` table yet (see task list),
+// so this only lives in memory for the app session; it isn't persisted
+// across a reload. That's the next real step once a Supabase table exists.
+export type ConfirmedMedication = DraftMedication & { reminder: MedicationReminder };
+
 type NewDraftMedication = {
   name: string;
   dose: string;
@@ -27,6 +34,7 @@ type NewDraftMedication = {
 
 type MedicationDraftContextType = {
   draftMeds: DraftMedication[];
+  medications: ConfirmedMedication[];
   addDraftMed: (med: NewDraftMedication) => DraftMedication;
   updateDraftMed: (id: string, patch: Partial<Pick<DraftMedication, 'name' | 'dose' | 'frequency'>>) => void;
   getDraftMed: (id: string) => DraftMedication | undefined;
@@ -41,6 +49,7 @@ const MedicationDraftContext = createContext<MedicationDraftContextType | undefi
 
 export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   const [draftMeds, setDraftMeds] = useState<DraftMedication[]>([]);
+  const [medications, setMedications] = useState<ConfirmedMedication[]>([]);
 
   const addDraftMed = (med: NewDraftMedication): DraftMedication => {
     const newMed: DraftMedication = {
@@ -62,8 +71,18 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
     setDraftMeds((cur) => cur.filter((m) => m.id !== id));
   };
 
+  // Setting a reminder is what finalizes a medication: it moves out of the
+  // in-progress draft list and into `medications`, which is what Home
+  // actually renders. Before this, a confirmed medication just sat in
+  // draftMeds and got wiped by clearDraftMeds() at the end of the flow,
+  // which is why nothing ever showed up on Home.
   const setMedicationReminder = (id: string, reminder: MedicationReminder) => {
-    setDraftMeds((cur) => cur.map((m) => (m.id === id ? { ...m, reminder } : m)));
+    setDraftMeds((cur) => {
+      const med = cur.find((m) => m.id === id);
+      if (!med) return cur;
+      setMedications((meds) => [...meds, { ...med, reminder }]);
+      return cur.filter((m) => m.id !== id);
+    });
   };
 
   // Finds the next medication in this session that hasn't had a reminder set
@@ -94,6 +113,7 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
     <MedicationDraftContext.Provider
       value={{
         draftMeds,
+        medications,
         addDraftMed,
         updateDraftMed,
         getDraftMed,

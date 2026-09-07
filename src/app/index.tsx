@@ -7,9 +7,11 @@ import { QuickActionButton } from '@/components/quick-action-button';
 import { ConditionCard } from '@/components/condition-card';
 import { MedicationRow } from '@/components/medication-row';
 import { useAuth } from '@/context/auth';
+import { useMedicationDraft } from '@/context/medication-draft';
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
+  const { medications } = useMedicationDraft();
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -68,8 +70,27 @@ export default function HomeScreen() {
 
         <SectionHeader>Today's medications</SectionHeader>
         <View className="mb-5 gap-1.5">
-          <MedicationRow name="Gabapentin" time="8:00" taken />
-          <MedicationRow name="Gabapentin" time="20:00" taken={false} />
+          {medications.length === 0 && (
+            <Text className="text-xs text-neutral-400 py-1">
+              No medications added yet — use "Add a medication" below.
+            </Text>
+          )}
+          {medications.map((med) =>
+            med.reminder.asNeeded ? (
+              <MedicationRow key={med.id} name={`${med.name} ${med.dose}`} time="As needed" taken={false} />
+            ) : med.reminder.times.length > 0 ? (
+              med.reminder.times.map((time) => (
+                <MedicationRow
+                  key={`${med.id}-${time}`}
+                  name={`${med.name} ${med.dose}`}
+                  time={time}
+                  taken={false}
+                />
+              ))
+            ) : (
+              <MedicationRow key={med.id} name={`${med.name} ${med.dose}`} time={med.frequency} taken={false} />
+            )
+          )}
           <Pressable
             onPress={() => router.push('/quick-add/add-medication')}
             className="flex-row items-center gap-2 py-2"
