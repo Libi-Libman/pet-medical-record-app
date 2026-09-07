@@ -13,7 +13,7 @@ const Tag = () => (
 );
 
 export default function QuickAddReview() {
-  const { draftMeds, addDraftMed, updateDraftMed } = useMedicationDraft();
+  const { draftMeds, addDraftMed, updateDraftMed, findDuplicateCandidate } = useMedicationDraft();
   const [extractedId, setExtractedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -95,12 +95,20 @@ export default function QuickAddReview() {
                   className="text-xs text-purple-700 py-0.5"
                 />
                 <Pressable
-                  onPress={() =>
+                  onPress={() => {
+                    const duplicate = findDuplicateCandidate(extractedMed.id);
+                    if (duplicate) {
+                      router.push({
+                        pathname: '/quick-add/duplicate-check',
+                        params: { manualId: duplicate.id, extractedId: extractedMed.id },
+                      });
+                      return;
+                    }
                     router.push({
                       pathname: '/quick-add/reminder',
                       params: { medicationId: extractedMed.id },
-                    })
-                  }
+                    });
+                  }}
                   className="self-start mt-2 px-3 py-1.5 rounded-full bg-purple-600"
                 >
                   <Text className="text-xs text-white font-medium">Confirm & set reminder</Text>

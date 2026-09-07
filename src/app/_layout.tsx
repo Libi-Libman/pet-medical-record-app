@@ -33,6 +33,7 @@ function RootNavigator() {
         <Stack.Screen name="quick-add/capture" />
         <Stack.Screen name="quick-add/add-medication" />
         <Stack.Screen name="quick-add/review" />
+        <Stack.Screen name="quick-add/duplicate-check" />
         <Stack.Screen name="quick-add/reminder" />
       </Stack.Protected>
     </Stack>

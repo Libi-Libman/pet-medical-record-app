@@ -30,8 +30,10 @@ type MedicationDraftContextType = {
   addDraftMed: (med: NewDraftMedication) => DraftMedication;
   updateDraftMed: (id: string, patch: Partial<Pick<DraftMedication, 'name' | 'dose' | 'frequency'>>) => void;
   getDraftMed: (id: string) => DraftMedication | undefined;
+  removeDraftMed: (id: string) => void;
   setMedicationReminder: (id: string, reminder: MedicationReminder) => void;
   nextUnconfirmedMed: (excludingId?: string) => DraftMedication | undefined;
+  findDuplicateCandidate: (id: string) => DraftMedication | undefined;
   clearDraftMeds: () => void;
 };
 
@@ -56,6 +58,10 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
 
   const getDraftMed = (id: string) => draftMeds.find((m) => m.id === id);
 
+  const removeDraftMed = (id: string) => {
+    setDraftMeds((cur) => cur.filter((m) => m.id !== id));
+  };
+
   const setMedicationReminder = (id: string, reminder: MedicationReminder) => {
     setDraftMeds((cur) => cur.map((m) => (m.id === id ? { ...m, reminder } : m)));
   };
@@ -66,6 +72,22 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   const nextUnconfirmedMed = (excludingId?: string) =>
     draftMeds.find((m) => m.id !== excludingId && !m.reminder);
 
+  // A same-named medication from the *other* source, still unconfirmed —
+  // the case where a medication was both entered manually and found in a
+  // photo during the same capture. Name match is exact/case-insensitive for
+  // now; real extraction will need fuzzier matching eventually.
+  const findDuplicateCandidate = (id: string) => {
+    const med = draftMeds.find((m) => m.id === id);
+    if (!med) return undefined;
+    return draftMeds.find(
+      (m) =>
+        m.id !== id &&
+        !m.reminder &&
+        m.source !== med.source &&
+        m.name.trim().toLowerCase() === med.name.trim().toLowerCase()
+    );
+  };
+
   const clearDraftMeds = () => setDraftMeds([]);
 
   return (
@@ -75,8 +97,10 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
         addDraftMed,
         updateDraftMed,
         getDraftMed,
+        removeDraftMed,
         setMedicationReminder,
         nextUnconfirmedMed,
+        findDuplicateCandidate,
         clearDraftMeds,
       }}
     >
