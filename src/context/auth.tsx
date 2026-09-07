@@ -15,6 +15,7 @@ const MOCK_SESSION = {
 type AuthContextType = {
   session: Session | null;
   loading: boolean;
+  isMockSession: boolean;
   sendCode: (email: string) => Promise<{ error: string | null }>;
   verifyCode: (email: string, code: string) => Promise<{ error: string | null }>;
   signInAsMockUser: () => void;
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, loading, sendCode, verifyCode, signInAsMockUser, signOut }}
+      value={{ session, loading, isMockSession, sendCode, verifyCode, signInAsMockUser, signOut }}
     >
       {children}
     </AuthContext.Provider>
