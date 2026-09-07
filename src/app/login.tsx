@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { useAuth } from '@/context/auth';
 
 export default function Login() {
-  const { sendCode, verifyCode } = useAuth();
+  const { sendCode, verifyCode, signInAsMockUser } = useAuth();
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -112,6 +112,12 @@ export default function Login() {
               <Text className="text-xs text-blue-700 text-center">Use a different email</Text>
             </Pressable>
           </View>
+        )}
+
+        {__DEV__ && (
+          <Pressable onPress={signInAsMockUser} className="items-center py-2">
+            <Text className="text-xs text-gray-400">Continue with mock data (dev only)</Text>
+          </Pressable>
         )}
       </View>
     </SafeAreaView>
