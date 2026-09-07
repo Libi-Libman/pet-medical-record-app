@@ -1,17 +1,40 @@
 import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { useMedicationDraft } from '@/context/medication-draft';
 
 const presets = ['Morning', 'Evening', 'With meals', 'Custom'];
 
 export default function QuickAddReminder() {
+  const { medicationId } = useLocalSearchParams<{ medicationId?: string }>();
+  const { getDraftMed, setMedicationReminder, nextUnconfirmedMed, clearDraftMeds } =
+    useMedicationDraft();
   const [selected, setSelected] = useState<string[]>(['Morning', 'With meals']);
   const [asNeeded, setAsNeeded] = useState(false);
 
+  const medication = medicationId ? getDraftMed(medicationId) : undefined;
+
   const toggle = (p: string) =>
     setSelected((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
+
+  const handleDone = () => {
+    if (medication) {
+      setMedicationReminder(medication.id, { times: asNeeded ? [] : selected, asNeeded });
+    }
+
+    const next = nextUnconfirmedMed(medication?.id);
+    if (next) {
+      // Another medication from this session still needs a reminder —
+      // chain straight to it instead of dropping back to Home.
+      router.replace({ pathname: '/quick-add/reminder', params: { medicationId: next.id } });
+      return;
+    }
+
+    clearDraftMeds();
+    router.replace('/');
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -24,8 +47,10 @@ export default function QuickAddReminder() {
 
       <View className="flex-1 px-4 pt-6 gap-6">
         <View className="bg-purple-50 border border-purple-100 rounded-2xl p-3">
-          <Text className="text-sm font-medium text-purple-900">Carprofen 75mg</Text>
-          <Text className="text-xs text-purple-700">Twice daily, with food</Text>
+          <Text className="text-sm font-medium text-purple-900">
+            {medication ? `${medication.name} ${medication.dose}` : 'Medication'}
+          </Text>
+          <Text className="text-xs text-purple-700">{medication?.frequency ?? ''}</Text>
         </View>
 
         <View>
@@ -53,7 +78,7 @@ export default function QuickAddReminder() {
       </View>
 
       <View className="px-4 pb-6 pt-2">
-        <Pressable onPress={() => router.push('/')} className="items-center py-3.5 rounded-2xl bg-blue-600">
+        <Pressable onPress={handleDone} className="items-center py-3.5 rounded-2xl bg-blue-600">
           <Text className="text-white font-semibold">Done</Text>
         </Pressable>
       </View>

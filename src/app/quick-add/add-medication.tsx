@@ -17,12 +17,23 @@ export default function AddMedication() {
   const canAdd = name.trim().length > 0 && dose.trim().length > 0;
 
   const handleAdd = () => {
-    addDraftMed({ name: name.trim(), dose: dose.trim(), frequency });
+    const med = addDraftMed({
+      name: name.trim(),
+      dose: dose.trim(),
+      frequency,
+      source: 'owner_entered',
+    });
+
     if (from === 'capture') {
+      // Part of a capture in progress — go back and let the capture's Save
+      // button decide when to move on to setting reminders.
       router.back();
-    } else {
-      router.push('/');
+      return;
     }
+
+    // Opened directly (e.g. from Home's "Add a medication" link) — there's
+    // no capture step wrapping this, so go straight to setting a reminder.
+    router.push({ pathname: '/quick-add/reminder', params: { medicationId: med.id } });
   };
 
   return (

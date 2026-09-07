@@ -12,7 +12,7 @@ export default function QuickAddCapture() {
   const [hasPhoto, setHasPhoto] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
-  const { draftMeds, clearDraftMeds } = useMedicationDraft();
+  const { draftMeds, nextUnconfirmedMed, clearDraftMeds } = useMedicationDraft();
   const isToday = date.toDateString() === new Date().toDateString();
   const formattedDate = isToday
     ? `Today, ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
@@ -21,9 +21,24 @@ export default function QuickAddCapture() {
   const canSave = note.trim().length > 0 || hasPhoto || draftMeds.length > 0;
 
   const handleSave = () => {
-    const goTo = hasPhoto ? '/quick-add/review' : '/';
+    if (hasPhoto) {
+      // Extraction flow picks up any medications found in the document —
+      // reminders get set from the review screen instead.
+      router.push('/quick-add/review');
+      return;
+    }
+
+    const pendingMed = nextUnconfirmedMed();
+    if (pendingMed) {
+      // At least one medication was added manually during this capture —
+      // it still needs a reminder before we're done (spec requires this for
+      // every manually-added medication, not just extracted ones).
+      router.push({ pathname: '/quick-add/reminder', params: { medicationId: pendingMed.id } });
+      return;
+    }
+
     clearDraftMeds();
-    router.push(goTo);
+    router.push('/');
   };
 
   return (
