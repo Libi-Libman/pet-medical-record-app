@@ -12,6 +12,7 @@ export type MedicationRow = {
   reminderTimes: string[];
   asNeeded: boolean;
   createdAt: string;
+  petId: string | null;
 };
 
 // Real, persisted medications from Supabase (see
@@ -27,7 +28,7 @@ export const useMedications = () => {
       const { data, error } = await supabase
         .from('medications')
         .select(
-          'id, name, dose, frequency, source, reminderTimes:reminder_times, asNeeded:as_needed, createdAt:created_at'
+          'id, name, dose, frequency, source, reminderTimes:reminder_times, asNeeded:as_needed, createdAt:created_at, petId:pet_id'
         )
         .order('created_at', { ascending: true });
 
@@ -44,6 +45,7 @@ export const insertMedication = async (input: {
   source: MedicationSource;
   reminderTimes: string[];
   asNeeded: boolean;
+  petId?: string;
 }): Promise<MedicationRow> => {
   const { data, error } = await supabase
     .from('medications')
@@ -54,9 +56,10 @@ export const insertMedication = async (input: {
       source: input.source,
       reminder_times: input.reminderTimes,
       as_needed: input.asNeeded,
+      pet_id: input.petId ?? null,
     })
     .select(
-      'id, name, dose, frequency, source, reminderTimes:reminder_times, asNeeded:as_needed, createdAt:created_at'
+      'id, name, dose, frequency, source, reminderTimes:reminder_times, asNeeded:as_needed, createdAt:created_at, petId:pet_id'
     )
     .single();
 

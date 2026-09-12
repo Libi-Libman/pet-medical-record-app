@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth';
 import { useMedications, insertMedication, MedicationRow } from '@/lib/queries/useMedications';
+import { useOwnerPets } from '@/lib/queries/useOwnerPets';
 
 // Matches the product's provenance requirement: every record needs to know
 // whether it was entered by the owner or extracted from a document.
@@ -65,6 +66,8 @@ const fromRow = (row: MedicationRow): ConfirmedMedication => ({
 export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   const { session, isMockSession } = useAuth();
   const queryClient = useQueryClient();
+  const { data: pets } = useOwnerPets();
+  const currentPetId = pets?.[0]?.id;
   const [draftMeds, setDraftMeds] = useState<DraftMedication[]>([]);
   const [medications, setMedications] = useState<ConfirmedMedication[]>([]);
 
@@ -136,6 +139,7 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
         source: med.source,
         reminderTimes: reminder.asNeeded ? [] : reminder.times,
         asNeeded: reminder.asNeeded,
+        petId: currentPetId,
       });
       queryClient.invalidateQueries({ queryKey: ['medications', 'owner', session.user.id] });
     } catch (error) {

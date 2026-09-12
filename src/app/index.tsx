@@ -8,10 +8,16 @@ import { ConditionCard } from '@/components/condition-card';
 import { MedicationRow } from '@/components/medication-row';
 import { useAuth } from '@/context/auth';
 import { useMedicationDraft } from '@/context/medication-draft';
+import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { usePetAge } from '@/lib/dates/usePetAge';
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
   const { medications } = useMedicationDraft();
+  const { data: pets, isLoading: petsLoading } = useOwnerPets();
+  const pet = pets?.[0];
+  const petAge = pet ? usePetAge(pet) : undefined;
+  const petHowDoing = pet ? (pet.sex === 'male' ? "How he's doing" : "How she's doing") : "How they're doing";
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -26,15 +32,32 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View className="mb-4 flex-row items-center gap-3">
+        <Pressable
+          onPress={() => router.push('/pet-list')}
+          className="mb-4 flex-row items-center gap-3"
+        >
           <View className="h-14 w-14 items-center justify-center rounded-full bg-amber-100">
             <MaterialCommunityIcons name="paw" size={26} color="#92400E" />
           </View>
-          <View>
-            <Text className="text-lg font-semibold text-neutral-900">Luna</Text>
-            <Text className="text-xs text-neutral-500">Golden retriever · 7 years</Text>
+          <View className="flex-1">
+            {petsLoading ? (
+              <Text className="text-sm text-neutral-400">Loading pet…</Text>
+            ) : pet ? (
+              <>
+                <Text className="text-lg font-semibold text-neutral-900">{pet.name}</Text>
+                <Text className="text-xs text-neutral-500">
+                  {[pet.breed || pet.species, petAge].filter(Boolean).join(' · ')}
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text className="text-sm font-semibold text-neutral-900">No pet yet</Text>
+                <Text className="text-xs text-blue-700">Tap to add one</Text>
+              </>
+            )}
           </View>
-        </View>
+          <Feather name="chevron-right" size={18} color="#A8A29E" />
+        </Pressable>
 
         <View className="mb-5 flex-row gap-2">
           <QuickActionButton
@@ -50,7 +73,7 @@ export default function HomeScreen() {
           />
         </View>
 
-        <SectionHeader>How she's doing</SectionHeader>
+        <SectionHeader>{petHowDoing}</SectionHeader>
         <View className="mb-5 gap-2">
            <ConditionCard
             status="recovering"
