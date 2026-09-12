@@ -30,6 +30,7 @@ function RootNavigator() {
         <Stack.Screen name="timeline" />
         <Stack.Screen name="vet-summary" />
         <Stack.Screen name="pet-list/index" />
+        <Stack.Screen name="pet-list/add-pet" />
         <Stack.Screen name="quick-add/capture" />
         <Stack.Screen name="quick-add/add-medication" />
         <Stack.Screen name="quick-add/review" />
