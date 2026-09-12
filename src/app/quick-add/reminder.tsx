@@ -1,27 +1,53 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMedicationDraft } from '@/context/medication-draft';
+import { getFrequencyPlan } from '@/lib/medications/frequency';
 
-const presets = ['Morning', 'Evening', 'With meals', 'Custom'];
+const timeToDate = (time: string) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+};
+
+const dateToTime = (date: Date) =>
+  `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
 export default function QuickAddReminder() {
   const { medicationId } = useLocalSearchParams<{ medicationId?: string }>();
   const { getDraftMed, setMedicationReminder, nextUnconfirmedMed, clearDraftMeds } =
     useMedicationDraft();
-  const [selected, setSelected] = useState<string[]>(['Morning', 'With meals']);
-  const [asNeeded, setAsNeeded] = useState(false);
 
   const medication = medicationId ? getDraftMed(medicationId) : undefined;
+  const plan = getFrequencyPlan(medication?.frequency ?? 'Once daily');
 
-  const toggle = (p: string) =>
-    setSelected((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
+  const [times, setTimes] = useState<string[]>(plan.defaultTimes);
+  const [pickerIndex, setPickerIndex] = useState<number | null>(null);
+
+  // Reset to this medication's own defaults when chaining to the next one.
+  useEffect(() => {
+    setTimes(plan.defaultTimes);
+    setPickerIndex(null);
+    // plan is derived from medication, which changes with medicationId —
+    // that's the only thing that should reset the times.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [medicationId]);
+
+  const updateTime = (index: number, value: string) => {
+    setTimes((cur) => cur.map((t, i) => (i === index ? value : t)));
+  };
 
   const handleDone = () => {
     if (medication) {
-      setMedicationReminder(medication.id, { times: asNeeded ? [] : selected, asNeeded });
+      setMedicationReminder(medication.id, {
+        times: plan.requiresReminder ? times : [],
+        frequencyType: plan.frequencyType,
+        frequencyInterval: plan.frequencyInterval,
+      });
     }
 
     const next = nextUnconfirmedMed(medication?.id);
@@ -53,29 +79,67 @@ export default function QuickAddReminder() {
           <Text className="text-xs text-purple-700">{medication?.frequency ?? ''}</Text>
         </View>
 
-        <View>
-          <Text className="text-xs text-gray-500 mb-2">When?</Text>
-          <View className="flex-row flex-wrap gap-2">
-            {presets.map((p) => (
-              <Pressable
-                key={p}
-                onPress={() => toggle(p)}
-                disabled={asNeeded}
-                className={`px-3 py-2 rounded-full border ${selected.includes(p) && !asNeeded ? 'bg-purple-600 border-purple-600' : 'bg-white border-gray-300'}`}
+        {plan.requiresReminder ? (
+          <View className="gap-3">
+            <Text className="text-xs text-gray-500">
+              When would you like to be reminded? We've set default times — tap one to change it.
+            </Text>
+            {plan.intakeLabels.map((label, index) => (
+              <View
+                key={label}
+                className="flex-row items-center justify-between bg-gray-50 rounded-2xl px-3 py-3"
               >
-                <Text className={`text-xs font-medium ${selected.includes(p) && !asNeeded ? 'text-white' : 'text-gray-700'}`}>{p}</Text>
-              </Pressable>
+                <Text className="text-sm text-gray-800">{label}</Text>
+                {Platform.OS === 'web' ? (
+                  // @ts-ignore - raw HTML input, web only (matches capture.tsx's date input pattern)
+                  <input
+                    type="time"
+                    value={times[index]}
+                    onChange={(e: any) => updateTime(index, e.target.value)}
+                    style={{
+                      padding: 6,
+                      borderRadius: 8,
+                      border: '1px solid #DDD6FE',
+                      background: '#EDE9FE',
+                      color: '#5B21B6',
+                      fontSize: 14,
+                      fontWeight: 600,
+                    }}
+                  />
+                ) : (
+                  <Pressable
+                    onPress={() => setPickerIndex(index)}
+                    className="px-3 py-1.5 rounded-lg bg-purple-100"
+                  >
+                    <Text className="text-sm font-semibold text-purple-900">{times[index]}</Text>
+                  </Pressable>
+                )}
+              </View>
             ))}
           </View>
-        </View>
-
-        <Pressable onPress={() => setAsNeeded(!asNeeded)} className="flex-row items-center gap-2.5">
-          <View className={`w-5 h-5 rounded-md border items-center justify-center ${asNeeded ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-            {asNeeded && <Feather name="check" size={12} color="white" />}
+        ) : (
+          <View className="bg-gray-50 rounded-2xl px-3 py-4">
+            <Text className="text-sm text-gray-700">
+              This is marked as-needed — no reminder will be set.
+            </Text>
           </View>
-          <Text className="text-sm text-gray-800">As-needed — don't set a reminder</Text>
-        </Pressable>
+        )}
       </View>
+
+      {Platform.OS !== 'web' && pickerIndex !== null && (
+        <DateTimePicker
+          value={timeToDate(times[pickerIndex])}
+          mode="time"
+          display="default"
+          onChange={(_event, selected) => {
+            const index = pickerIndex;
+            setPickerIndex(null);
+            if (selected && index !== null) {
+              updateTime(index, dateToTime(selected));
+            }
+          }}
+        />
+      )}
 
       <View className="px-4 pb-6 pt-2">
         <Pressable onPress={handleDone} className="items-center py-3.5 rounded-2xl bg-blue-600">

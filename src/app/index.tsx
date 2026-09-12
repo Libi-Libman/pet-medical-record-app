@@ -99,7 +99,7 @@ export default function HomeScreen() {
             </Text>
           )}
           {medications.map((med) =>
-            med.reminder.asNeeded ? (
+            med.reminder.frequencyType === 'as_needed' ? (
               <MedicationRow key={med.id} name={`${med.name} ${med.dose}`} time="As needed" taken={false} />
             ) : med.reminder.times.length > 0 ? (
               med.reminder.times.map((time) => (

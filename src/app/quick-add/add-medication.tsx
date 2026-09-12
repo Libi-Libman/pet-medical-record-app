@@ -4,8 +4,9 @@ import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useMedicationDraft } from '@/context/medication-draft';
+import { FREQUENCY_PRESETS } from '@/lib/medications/frequency';
 
-const presets = ['Once daily', 'Twice daily', 'As needed', 'Custom'];
+const presets = FREQUENCY_PRESETS;
 
 export default function AddMedication() {
   const { from } = useLocalSearchParams<{ from?: string }>();

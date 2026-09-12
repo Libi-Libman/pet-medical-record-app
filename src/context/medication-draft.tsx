@@ -3,32 +3,36 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth';
 import { useMedications, insertMedication, MedicationRow } from '@/lib/queries/useMedications';
 import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { describeFrequency, FrequencyType } from '@/lib/medications/frequency';
+import { parseDose, formatDose } from '@/lib/medications/parseDose';
 
 // Matches the product's provenance requirement: every record needs to know
 // whether it was entered by the owner or extracted from a document.
 export type MedicationSource = 'owner_entered' | 'extracted_from_document';
 
 export type MedicationReminder = {
-  times: string[]; // e.g. ['Morning', 'With meals']
-  asNeeded: boolean;
+  times: string[]; // 'HH:MM', empty when frequencyType is 'as_needed'
+  frequencyType: FrequencyType;
+  frequencyInterval: number | null;
 };
 
 export type DraftMedication = {
   id: string;
   name: string;
-  dose: string;
-  frequency: string;
+  dose: string; // free text, e.g. "75mg" — split into dose/dose_unit on save
+  frequency: string; // human label, e.g. "Twice daily" — mapped to
+  // frequency_type/frequency_interval on save (see getFrequencyPlan)
   source: MedicationSource;
   reminder?: MedicationReminder;
 };
 
 // A medication that's been through the full quick-add flow and had its
 // reminder set — this is what the Home screen shows under "Today's
-// medications". Under a real Supabase session this is persisted to the
-// `medications` table (supabase/medications-table.sql) and survives a
-// reload. Under the dev-only mock session there's no real Supabase JWT to
-// write with, so it only lives in memory for the app session — same
-// limitation as the pet-list screen.
+// medications". Persisted to the real `medications` table in Supabase
+// under a real session (see supabase/medications-schema-notes.md); under
+// the dev-only mock session there's no real Supabase JWT to write with, so
+// it only lives in memory for the app session — same limitation as the
+// pet-list screen.
 export type ConfirmedMedication = DraftMedication & { reminder: MedicationReminder };
 
 type NewDraftMedication = {
@@ -57,11 +61,19 @@ const MedicationDraftContext = createContext<MedicationDraftContextType | undefi
 const fromRow = (row: MedicationRow): ConfirmedMedication => ({
   id: row.id,
   name: row.name,
-  dose: row.dose,
-  frequency: row.frequency,
+  dose: formatDose(row.dose, row.doseUnit),
+  frequency: describeFrequency(row.frequencyType, row.frequencyInterval),
   source: row.source,
-  reminder: { times: row.reminderTimes, asNeeded: row.asNeeded },
+  reminder: {
+    // Postgres returns `time` as 'HH:MM:SS' — trim to 'HH:MM' to match what
+    // the reminder screen writes and displays.
+    times: row.reminderTimes.map((t) => t.slice(0, 5)),
+    frequencyType: row.frequencyType,
+    frequencyInterval: row.frequencyInterval,
+  },
 });
+
+const today = () => new Date().toISOString().slice(0, 10);
 
 export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   const { session, isMockSession } = useAuth();
@@ -113,11 +125,10 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   };
 
   // Setting a reminder is what finalizes a medication: it moves out of the
-  // in-progress draft list and, under a real session, gets written to
-  // Supabase (`medications` table) — that's what actually persists it
-  // across a reload, not just this local state. Under the mock session it
-  // still finalizes locally so the flow is fully clickable during dev, it
-  // just won't survive a reload.
+  // in-progress draft list and, under a real session with a real pet on
+  // file, gets written to Supabase (`medications` table — pet_id is
+  // required there, so nothing is written until a pet exists). Local state
+  // finalizes either way so the flow stays fully clickable during dev.
   const setMedicationReminder = async (id: string, reminder: MedicationReminder) => {
     const med = draftMeds.find((m) => m.id === id);
     if (!med) return;
@@ -131,15 +142,24 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    if (!currentPetId) {
+      // medications.pet_id is NOT NULL — can't write until a pet exists.
+      console.warn('No pet on file yet — medication saved locally only, not to Supabase.');
+      return;
+    }
+
     try {
+      const { dose, doseUnit } = parseDose(med.dose);
       await insertMedication({
-        name: med.name,
-        dose: med.dose,
-        frequency: med.frequency,
-        source: med.source,
-        reminderTimes: reminder.asNeeded ? [] : reminder.times,
-        asNeeded: reminder.asNeeded,
         petId: currentPetId,
+        name: med.name,
+        dose,
+        doseUnit,
+        frequencyType: reminder.frequencyType,
+        frequencyInterval: reminder.frequencyInterval,
+        reminderTimes: reminder.times,
+        startDate: today(),
+        source: med.source,
       });
       queryClient.invalidateQueries({ queryKey: ['medications', 'owner', session.user.id] });
     } catch (error) {
