@@ -11,7 +11,12 @@ const PetList = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Your pets</Text>
+        <View style={styles.headerLeft}>
+          <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backButton}>
+            <Feather name="arrow-left" size={22} color="#2C2C2A" />
+          </Pressable>
+          <Text style={styles.title}>Your pets</Text>
+        </View>
         <Pressable
           onPress={() => router.push('/pet-list/add-pet')}
           style={styles.addButton}
@@ -44,6 +49,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  backButton: {
+    marginRight: 2,
   },
   title: {
     fontSize: 18,
