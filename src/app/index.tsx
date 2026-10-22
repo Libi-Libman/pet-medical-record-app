@@ -10,6 +10,19 @@ import { useAuth } from '@/context/auth';
 import { useMedicationDraft } from '@/context/medication-draft';
 import { useOwnerPets } from '@/lib/queries/useOwnerPets';
 import { usePetAge } from '@/lib/dates/usePetAge';
+import { useEpisodes, isActiveEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
+import { useEvents } from '@/lib/queries/useEvents';
+
+const episodeCardStatus = (status: EpisodeStatus): 'recovering' | 'chronic' =>
+  status === 'active' ? 'recovering' : 'chronic';
+
+const episodeCardIcon = (category: string | null) => {
+  if (category && /ortho|joint|bone|ligament/i.test(category)) return 'activity' as const;
+  return 'heart' as const;
+};
+
+const formatEventDate = (iso: string) =>
+  new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
@@ -18,6 +31,19 @@ export default function HomeScreen() {
   const pet = pets?.[0];
   const petAge = pet ? usePetAge(pet) : undefined;
   const petHowDoing = pet ? (pet.sex === 'male' ? "How he's doing" : "How she's doing") : "How they're doing";
+
+  const { data: episodes, isLoading: episodesLoading } = useEpisodes(pet?.id);
+  const activeEpisodes = (episodes ?? []).filter((e) => isActiveEpisode(e.status));
+
+  const { data: events, isLoading: eventsLoading } = useEvents(pet?.id);
+  const today = new Date().toISOString().split('T')[0];
+  const nextAppointment = (events ?? [])
+    .filter((e) => e.type === 'appointment' && e.status === 'scheduled' && e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))[0];
+  const recentEvents = (events ?? [])
+    .filter((e) => e.date <= today)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 3);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -73,22 +99,31 @@ export default function HomeScreen() {
           />
         </View>
 
-        <SectionHeader>{petHowDoing}</SectionHeader>
+        <View className="mb-2 flex-row items-center justify-between">
+          <SectionHeader>{petHowDoing}</SectionHeader>
+          <Pressable onPress={() => router.push('/episode-add' as any)} hitSlop={10}>
+            <Feather name="plus-circle" size={16} color="#92400E" />
+          </Pressable>
+        </View>
         <View className="mb-5 gap-2">
-           <ConditionCard
-            status="recovering"
-            icon="activity"
-            title="Cruciate ligament rupture"
-            subtitle="Recovering · activity restricted"
-            onPress={() => router.push('/episode-detail')}
-          />
-          <ConditionCard
-            status="chronic"
-            icon="heart"
-            title="Arthritis"
-            subtitle="Chronic, well managed · injection in 3 days"
-            onPress={() => router.push('/episode-detail')}
-          />
+          {episodesLoading ? (
+            <Text className="text-xs text-neutral-400 py-1">Loading…</Text>
+          ) : activeEpisodes.length === 0 ? (
+            <Text className="text-xs text-neutral-400 py-1">
+              No active conditions — tap + to add one.
+            </Text>
+          ) : (
+            activeEpisodes.map((ep) => (
+              <ConditionCard
+                key={ep.id}
+                status={episodeCardStatus(ep.status)}
+                icon={episodeCardIcon(ep.category)}
+                title={ep.name}
+                subtitle={ep.currentStatusNote || ep.category || 'Ongoing'}
+                onPress={() => router.push({ pathname: '/episode-detail', params: { id: ep.id } })}
+              />
+            ))
+          )}
         </View>
 
         <SectionHeader>Today's medications</SectionHeader>
@@ -122,14 +157,37 @@ export default function HomeScreen() {
             <Text className="text-xs text-blue-700 font-medium">Add a medication</Text>
           </Pressable>
         </View>
-        <SectionHeader>Coming up</SectionHeader>
-        <View className="mb-5 flex-row items-center gap-2.5 rounded-2xl bg-blue-50 px-3 py-2.5">
-          <Feather name="calendar" size={18} color="#0C447C" />
-          <View>
-            <Text className="text-xs font-semibold text-blue-900">Follow-up recheck</Text>
-            <Text className="text-xs text-blue-900">Tierklinik Schwabing · 20 Aug</Text>
-          </View>
+
+        <View className="mb-2 flex-row items-center justify-between">
+          <SectionHeader>Coming up</SectionHeader>
+          <Pressable onPress={() => router.push({ pathname: '/event-add' as any, params: { type: 'appointment' } })} hitSlop={10}>
+            <Feather name="plus-circle" size={16} color="#0C447C" />
+          </Pressable>
         </View>
+        <View className="mb-5">
+          {eventsLoading ? (
+            <Text className="text-xs text-neutral-400 py-1">Loading…</Text>
+          ) : nextAppointment ? (
+            <View className="flex-row items-center gap-2.5 rounded-2xl bg-blue-50 px-3 py-2.5">
+              <Feather name="calendar" size={18} color="#0C447C" />
+              <View>
+                <Text className="text-xs font-semibold text-blue-900">
+                  {nextAppointment.notes || 'Appointment'}
+                </Text>
+                <Text className="text-xs text-blue-900">
+                  {[nextAppointment.clinicName, formatEventDate(nextAppointment.date)]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <Text className="text-xs text-neutral-400 py-1">
+              No appointments scheduled — tap + to add one.
+            </Text>
+          )}
+        </View>
+
         <Pressable
           onPress={() => router.push('/timeline')}
           className="mb-2 flex-row items-center justify-between"
@@ -138,8 +196,17 @@ export default function HomeScreen() {
           <Text className="text-xs text-blue-800">View all</Text>
         </Pressable>
         <View className="gap-1.5">
-          <Text className="text-xs text-neutral-500">15 Jul · Sutures removed, wound reopened</Text>
-          <Text className="text-xs text-neutral-500">2 Jul · Surgery performed</Text>
+          {eventsLoading ? (
+            <Text className="text-xs text-neutral-400 py-1">Loading…</Text>
+          ) : recentEvents.length === 0 ? (
+            <Text className="text-xs text-neutral-400 py-1">No activity yet.</Text>
+          ) : (
+            recentEvents.map((e) => (
+              <Text key={e.id} className="text-xs text-neutral-500">
+                {formatEventDate(e.date)} · {e.notes || e.diagnosis || e.type}
+              </Text>
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

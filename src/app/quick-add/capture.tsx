@@ -4,7 +4,11 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMedicationDraft } from '@/context/medication-draft';
+import { useAuth } from '@/context/auth';
+import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { insertEvent } from '@/lib/queries/useEvents';
 
 
 export default function QuickAddCapture() {
@@ -12,15 +16,43 @@ export default function QuickAddCapture() {
   const [hasPhoto, setHasPhoto] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { draftMeds, nextUnconfirmedMed, clearDraftMeds } = useMedicationDraft();
+  const { session, isMockSession } = useAuth();
+  const { data: pets } = useOwnerPets();
+  const queryClient = useQueryClient();
   const isToday = date.toDateString() === new Date().toDateString();
   const formattedDate = isToday
     ? `Today, ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
     : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-  const canSave = note.trim().length > 0 || hasPhoto || draftMeds.length > 0;
+  const canSave = (note.trim().length > 0 || hasPhoto || draftMeds.length > 0) && !saving;
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // A typed note (with no photo) is its own timeline entry — save it as a
+    // real event before moving on, otherwise it's silently lost.
+    const petId = pets?.[0]?.id;
+    if (!hasPhoto && note.trim().length > 0 && session && !isMockSession && petId) {
+      setSaving(true);
+      try {
+        await insertEvent({
+          petId,
+          type: 'note',
+          date: date.toISOString().split('T')[0],
+          clinicName: null,
+          notes: note.trim(),
+          diagnosis: null,
+          treatment: null,
+          status: 'completed',
+        });
+        await queryClient.invalidateQueries({ queryKey: ['events', 'pet', petId] });
+      } catch (e) {
+        console.error('Failed to save timeline entry', e);
+      } finally {
+        setSaving(false);
+      }
+    }
+
     if (hasPhoto) {
       // Extraction flow picks up any medications found in the document —
       // reminders get set from the review screen instead.
