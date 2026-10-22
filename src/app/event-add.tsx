@@ -45,7 +45,10 @@ export default function AddEvent() {
     setSaving(true);
     setError(null);
     try {
-      const status: EventStatus | null = isAppointment ? 'scheduled' : 'completed';
+      // Any event dated in the future is still "scheduled" regardless of
+      // type, not just appointments — a visit or test booked ahead of time
+      // shouldn't be marked completed before it happens.
+      const status: EventStatus = dateToInput(date) > dateToInput(new Date()) ? 'scheduled' : 'completed';
       await insertEvent({
         petId,
         type,
