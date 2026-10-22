@@ -14,6 +14,7 @@ import type { FrequencyType } from '@/lib/medications/frequency';
 export type MedicationRow = {
   id: string;
   petId: string;
+  episodeId: string | null;
   name: string;
   dose: number | null;
   doseUnit: string | null;
@@ -21,12 +22,13 @@ export type MedicationRow = {
   frequencyInterval: number | null;
   reminderTimes: string[]; // 'HH:MM:SS' as returned by Postgres for `time`
   startDate: string; // 'YYYY-MM-DD'
+  endDate: string | null;
   source: MedicationSource;
   createdAt: string;
 };
 
 const SELECT_COLUMNS =
-  'id, petId:pet_id, name, dose, doseUnit:dose_unit, frequencyType:frequency_type, frequencyInterval:frequency_interval, reminderTimes:reminder_times, startDate:start_date, source, createdAt:created_at';
+  'id, petId:pet_id, episodeId:episode_id, name, dose, doseUnit:dose_unit, frequencyType:frequency_type, frequencyInterval:frequency_interval, reminderTimes:reminder_times, startDate:start_date, endDate:end_date, source, createdAt:created_at';
 
 // Real, persisted medications from Supabase — RLS scopes every query to the
 // signed-in owner's own pets automatically (policy joins through pets.owner_id).

@@ -20,7 +20,7 @@ const TYPE_OPTIONS: { value: EventType; label: string }[] = [
 const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 
 export default function AddEvent() {
-  const { type: initialType } = useLocalSearchParams<{ type?: EventType }>();
+  const { type: initialType, episodeId: initialEpisodeId } = useLocalSearchParams<{ type?: EventType; episodeId?: string }>();
   const { data: pets } = useOwnerPets();
   const petId = pets?.[0]?.id;
   const { data: episodes } = useEpisodes(petId);
@@ -33,7 +33,7 @@ export default function AddEvent() {
   const [notes, setNotes] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
   const [treatment, setTreatment] = useState('');
-  const [episodeId, setEpisodeId] = useState<string | null>(null);
+  const [episodeId, setEpisodeId] = useState<string | null>(initialEpisodeId ?? null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

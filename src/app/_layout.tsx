@@ -29,6 +29,8 @@ function RootNavigator() {
         <Stack.Screen name="episode-detail" />
         <Stack.Screen name="episode-add" />
         <Stack.Screen name="event-add" />
+        <Stack.Screen name="allergy-add" />
+        <Stack.Screen name="contact-add" />
         <Stack.Screen name="timeline" />
         <Stack.Screen name="vet-summary" />
         <Stack.Screen name="pet-list/index" />
