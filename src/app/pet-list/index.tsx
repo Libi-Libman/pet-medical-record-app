@@ -40,6 +40,7 @@ const PetList = () => {
           pet={pet}
           active={pet.id === activePet?.id}
           onPress={() => setActivePetId(pet.id)}
+          onEdit={() => router.push({ pathname: '/pet-list/add-pet', params: { id: pet.id } })}
         />
       ))}
     </SafeAreaView>

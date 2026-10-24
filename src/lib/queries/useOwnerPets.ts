@@ -54,3 +54,53 @@ export const insertPet = async (input: {
   if (error) throw error;
   return data as unknown as OwnerPet;
 };
+
+export const updatePet = async (
+  id: string,
+  input: {
+    name: string;
+    species: string;
+    breed: string | null;
+    sex: 'male' | 'female' | null;
+    sterilized: boolean;
+    birthDate: string | null;
+    microchipNumber: string | null;
+  }
+): Promise<OwnerPet> => {
+  const { data, error } = await supabase
+    .from('pets')
+    .update({
+      name: input.name,
+      species: input.species,
+      breed: input.breed,
+      sex: input.sex,
+      sterilized: input.sterilized,
+      birth_date: input.birthDate,
+      microchip_number: input.microchipNumber,
+    })
+    .eq('id', id)
+    .select(SELECT_COLUMNS)
+    .single();
+
+  if (error) throw error;
+  return data as unknown as OwnerPet;
+};
+
+// Postgres foreign-key-violation error code — surfaced as a clear message
+// instead of the raw constraint error when a pet still has medical records
+// (episodes, events, medications, etc.) pointing at it. Deliberately not
+// attempting to cascade-delete across every related table here — that
+// needs the real FK/cascade behavior confirmed first, not guessed.
+const FOREIGN_KEY_VIOLATION = '23503';
+
+export const deletePet = async (id: string): Promise<void> => {
+  const { error } = await supabase.from('pets').delete().eq('id', id);
+  if (error) {
+    if ((error as { code?: string }).code === FOREIGN_KEY_VIOLATION) {
+      throw new Error(
+        'This pet still has medical records attached (conditions, events, medications, etc.) — those need to be removed first.'
+      );
+    }
+    throw error;
+  }
+};

@@ -1,40 +1,73 @@
-import { View, Text, TextInput, Pressable, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth';
-import { insertPet } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
+import { insertPet, updatePet, deletePet } from '@/lib/queries/useOwnerPets';
 
 const SPECIES_OPTIONS = ['Dog', 'Cat', 'Other'];
 
 const dateToInput = (date: Date) => date.toISOString().split('T')[0];
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function AddPet() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const isEditing = !!id;
+
   const { session } = useAuth();
+  const { pets } = useActivePet();
+  const existing = isEditing ? pets.find((p) => p.id === id) : undefined;
   const queryClient = useQueryClient();
 
-  const [name, setName] = useState('');
-  const [species, setSpecies] = useState('Dog');
-  const [breed, setBreed] = useState('');
-  const [sex, setSex] = useState<'male' | 'female' | null>(null);
-  const [sterilized, setSterilized] = useState(false);
-  const [birthDate, setBirthDate] = useState<Date | null>(null);
+  const [name, setName] = useState(existing?.name ?? '');
+  const [species, setSpecies] = useState(existing ? capitalize(existing.species) : 'Dog');
+  const [breed, setBreed] = useState(existing?.breed ?? '');
+  const [sex, setSex] = useState<'male' | 'female' | null>(existing?.sex ?? null);
+  const [sterilized, setSterilized] = useState(existing?.sterilized ?? false);
+  const [birthDate, setBirthDate] = useState<Date | null>(
+    existing?.birthDate ? new Date(existing.birthDate + 'T00:00:00') : null
+  );
   const [showPicker, setShowPicker] = useState(false);
-  const [microchipNumber, setMicrochipNumber] = useState('');
+  const [microchipNumber, setMicrochipNumber] = useState(existing?.microchipNumber ?? '');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSave = name.trim().length > 0 && !!sex && !saving;
+  // `existing` can still be undefined at mount (the owner-pets query not
+  // resolved yet — e.g. a direct page load on this URL) — the useState
+  // initializers above only run once, so backfill the rest of the form
+  // once it arrives rather than leaving it permanently blank.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current || !existing) return;
+    hydratedRef.current = true;
+    setName(existing.name);
+    setSpecies(capitalize(existing.species));
+    setBreed(existing.breed ?? '');
+    setSex(existing.sex);
+    setSterilized(existing.sterilized);
+    setBirthDate(existing.birthDate ? new Date(existing.birthDate + 'T00:00:00') : null);
+    setMicrochipNumber(existing.microchipNumber ?? '');
+  }, [existing]);
+
+  const canSave = name.trim().length > 0 && !!sex && !saving && !deleting;
+
+  const invalidatePets = async () => {
+    if (session) {
+      await queryClient.invalidateQueries({ queryKey: ['pets', 'owner', session.user.id] });
+    }
+  };
 
   const handleSave = async () => {
     if (!canSave) return;
     setSaving(true);
     setError(null);
     try {
-      await insertPet({
+      const payload = {
         name: name.trim(),
         species: species.toLowerCase(),
         breed: breed.trim() || null,
@@ -42,10 +75,13 @@ export default function AddPet() {
         sterilized,
         birthDate: birthDate ? dateToInput(birthDate) : null,
         microchipNumber: microchipNumber.trim() || null,
-      });
-      if (session) {
-        await queryClient.invalidateQueries({ queryKey: ['pets', 'owner', session.user.id] });
+      };
+      if (isEditing && id) {
+        await updatePet(id, payload);
+      } else {
+        await insertPet(payload);
       }
+      await invalidatePets();
       router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong saving this pet.');
@@ -54,13 +90,52 @@ export default function AddPet() {
     }
   };
 
+  const doDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await deletePet(id);
+      await invalidatePets();
+      // The active-pet context falls back to another remaining pet on its
+      // own once this pet drops out of the owner-pets query, so there's
+      // nothing else to clean up here.
+      router.back();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not delete this pet.');
+      setDeleting(false);
+    }
+  };
+
+  const handleDelete = () => {
+    const message = `Delete ${existing?.name ?? 'this pet'}? This cannot be undone.`;
+    if (Platform.OS === 'web') {
+      // @ts-ignore - web-only global
+      if (typeof window !== 'undefined' && window.confirm(message)) {
+        doDelete();
+      }
+      return;
+    }
+    Alert.alert(`Delete ${existing?.name ?? 'this pet'}?`, 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: doDelete },
+    ]);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row items-center gap-3 px-4 pt-2 pb-3 border-b border-gray-100">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Feather name="arrow-left" size={22} color="#2C2C2A" />
-        </Pressable>
-        <Text className="text-base font-semibold text-gray-900">Add a pet</Text>
+      <View className="flex-row items-center justify-between gap-3 px-4 pt-2 pb-3 border-b border-gray-100">
+        <View className="flex-row items-center gap-3">
+          <Pressable onPress={() => router.back()} hitSlop={10}>
+            <Feather name="arrow-left" size={22} color="#2C2C2A" />
+          </Pressable>
+          <Text className="text-base font-semibold text-gray-900">{isEditing ? 'Edit pet' : 'Add a pet'}</Text>
+        </View>
+        {isEditing && (
+          <Pressable onPress={handleDelete} hitSlop={10} disabled={deleting}>
+            <Feather name="trash-2" size={18} color="#991B1B" />
+          </Pressable>
+        )}
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6" contentContainerStyle={{ gap: 16, paddingBottom: 24 }}>
@@ -207,9 +282,9 @@ export default function AddPet() {
           onPress={handleSave}
           className={`flex-row items-center justify-center gap-2 py-3.5 rounded-2xl ${canSave ? 'bg-blue-600' : 'bg-gray-200'}`}
         >
-          <Feather name="plus" size={16} color={canSave ? 'white' : '#9CA3AF'} />
+          <Feather name={isEditing ? 'check' : 'plus'} size={16} color={canSave ? 'white' : '#9CA3AF'} />
           <Text className={`font-semibold ${canSave ? 'text-white' : 'text-gray-400'}`}>
-            {saving ? 'Saving…' : 'Save pet'}
+            {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save pet'}
           </Text>
         </Pressable>
       </View>

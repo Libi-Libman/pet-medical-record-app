@@ -9,9 +9,10 @@ type Props = {
   pet: OwnerPet;
   active?: boolean;
   onPress?: () => void;
+  onEdit?: () => void;
 };
 
-export const PetCard = ({ pet, active = false, onPress }: Props) => {
+export const PetCard = ({ pet, active = false, onPress, onEdit }: Props) => {
   const age = usePetAge(pet);
 
   return (
@@ -36,6 +37,12 @@ export const PetCard = ({ pet, active = false, onPress }: Props) => {
           <Text style={styles.activeBadgeText}>Showing</Text>
         </View>
       ) : null}
+
+      {onEdit && (
+        <Pressable onPress={onEdit} hitSlop={10} style={styles.editButton}>
+          <Feather name="edit-2" size={16} color="#737373" />
+        </Pressable>
+      )}
     </Pressable>
   );
 };
@@ -86,5 +93,9 @@ const styles = StyleSheet.create({
     color: 'rgb(29 78 216)',
     fontSize: 11,
     fontWeight: '600',
+  },
+  editButton: {
+    padding: 6,
+    marginLeft: 4,
   },
 });
