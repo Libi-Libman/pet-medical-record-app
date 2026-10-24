@@ -4,13 +4,15 @@ import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useMedicationDraft } from '@/context/medication-draft';
+import { useActivePet } from '@/context/active-pet';
 import { FREQUENCY_PRESETS } from '@/lib/medications/frequency';
 
 const presets = FREQUENCY_PRESETS;
 
 export default function AddMedication() {
-  const { from } = useLocalSearchParams<{ from?: string }>();
+  const { from, date } = useLocalSearchParams<{ from?: string; date?: string }>();
   const { addDraftMed } = useMedicationDraft();
+  const { pet } = useActivePet();
   const [name, setName] = useState('');
   const [dose, setDose] = useState('');
   const [frequency, setFrequency] = useState('Once daily');
@@ -23,6 +25,7 @@ export default function AddMedication() {
       dose: dose.trim(),
       frequency,
       source: 'owner_entered',
+      startDate: date,
     });
 
     if (from === 'capture') {
@@ -50,6 +53,14 @@ export default function AddMedication() {
       </View>
 
       <View className="flex-1 px-4 pt-6 gap-4">
+        {!pet && (
+          <View className="flex-row items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+            <Feather name="alert-triangle" size={14} color="#92400E" />
+            <Text className="flex-1 text-xs text-amber-900">
+              No pet on file yet — this will only be remembered for this session until you add one.
+            </Text>
+          </View>
+        )}
         <View>
           <Text className="text-xs text-gray-500 mb-1">Medication name</Text>
           <TextInput

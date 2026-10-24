@@ -2,10 +2,10 @@ import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { useAllergies, insertAllergy, updateAllergy, deleteAllergy } from '@/lib/queries/useAllergies';
 
 const SEVERITY_OPTIONS = ['Mild', 'Moderate', 'Severe'];
@@ -16,8 +16,8 @@ export default function AddAllergy() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = !!id;
 
-  const { data: pets } = useOwnerPets();
-  const petId = pets?.[0]?.id;
+  const { pet } = useActivePet();
+  const petId = pet?.id;
   const { data: allergies } = useAllergies(petId);
   const existing = isEditing ? allergies?.find((a) => a.id === id) : undefined;
   const queryClient = useQueryClient();
@@ -34,6 +34,19 @@ export default function AddAllergy() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // `existing` can still be undefined at mount (allergies query not
+  // resolved yet) — backfill once it arrives rather than leaving the form
+  // blank forever.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current || !existing) return;
+    hydratedRef.current = true;
+    setSubstance(existing.substance);
+    setReaction(existing.reaction ?? '');
+    setSeverity(existing.severity ? capitalize(existing.severity) : null);
+    setDateIdentified(existing.dateIdentified ? new Date(existing.dateIdentified + 'T00:00:00') : null);
+  }, [existing]);
 
   const canSave = substance.trim().length > 0 && !!petId && !saving && !deleting;
 
@@ -176,10 +189,11 @@ export default function AddAllergy() {
                 mode="date"
                 display="default"
                 maximumDate={new Date()}
-                onChange={(_event, selected) => {
+                onValueChange={(_event, selected) => {
                   setShowPicker(false);
                   if (selected) setDateIdentified(selected);
                 }}
+                onDismiss={() => setShowPicker(false)}
               />
             )
           )}

@@ -32,16 +32,19 @@ const SELECT_COLUMNS =
 
 // Real, persisted medications from Supabase — RLS scopes every query to the
 // signed-in owner's own pets automatically (policy joins through pets.owner_id).
-export const useMedications = () => {
+// Scoped to one pet: an owner with more than one pet would otherwise see
+// every pet's medications mixed together on whichever pet's screen is open.
+export const useMedications = (petId: string | undefined) => {
   const { session, isMockSession } = useAuth();
 
   return useQuery({
-    queryKey: ['medications', 'owner', session?.user.id],
-    enabled: !!session && !isMockSession,
+    queryKey: ['medications', 'pet', petId],
+    enabled: !!session && !isMockSession && !!petId,
     queryFn: async (): Promise<MedicationRow[]> => {
       const { data, error } = await supabase
         .from('medications')
         .select(SELECT_COLUMNS)
+        .eq('pet_id', petId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;

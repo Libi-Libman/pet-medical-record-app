@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMedicationDraft } from '@/context/medication-draft';
+import { useActivePet } from '@/context/active-pet';
 import { getFrequencyPlan } from '@/lib/medications/frequency';
 
 const timeToDate = (time: string) => {
@@ -21,6 +22,7 @@ export default function QuickAddReminder() {
   const { medicationId } = useLocalSearchParams<{ medicationId?: string }>();
   const { getDraftMed, setMedicationReminder, nextUnconfirmedMed, clearDraftMeds } =
     useMedicationDraft();
+  const { pet } = useActivePet();
 
   const medication = medicationId ? getDraftMed(medicationId) : undefined;
   const plan = getFrequencyPlan(medication?.frequency ?? 'Once daily');
@@ -72,6 +74,14 @@ export default function QuickAddReminder() {
       </View>
 
       <View className="flex-1 px-4 pt-6 gap-6">
+        {!pet && (
+          <View className="flex-row items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+            <Feather name="alert-triangle" size={14} color="#92400E" />
+            <Text className="flex-1 text-xs text-amber-900">
+              No pet on file yet — this reminder will only last for this session until you add one.
+            </Text>
+          </View>
+        )}
         <View className="bg-purple-50 border border-purple-100 rounded-2xl p-3">
           <Text className="text-sm font-medium text-purple-900">
             {medication ? `${medication.name} ${medication.dose}` : 'Medication'}

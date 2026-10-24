@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { useEpisodes } from '@/lib/queries/useEpisodes';
 import { useEvents, useEpisodeEventLinks, EventRow } from '@/lib/queries/useEvents';
 
@@ -18,25 +18,29 @@ const typeIcon: Record<EventRow['type'], keyof typeof Feather.glyphMap> = {
 const formatDate = (iso: string) =>
   new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+// 'All' is a sentinel, not a real episode id — two conditions can share a
+// name, so filtering by id (not name) is what keeps their timelines apart.
+const ALL = 'All';
+
 export default function Timeline() {
-  const [filter, setFilter] = useState<string>('All');
-  const { data: pets } = useOwnerPets();
-  const petId = pets?.[0]?.id;
+  const [filter, setFilter] = useState<string>(ALL);
+  const { pet } = useActivePet();
+  const petId = pet?.id;
 
   const { data: episodes } = useEpisodes(petId);
   const { data: events, isLoading } = useEvents(petId);
   const { data: links } = useEpisodeEventLinks(petId);
 
-  const episodeNameByEventId = new Map<string, string>();
+  const episodeNameById = new Map((episodes ?? []).map((e) => [e.id, e.name] as const));
+  const episodeIdByEventId = new Map<string, string>();
   (links ?? []).forEach((link) => {
-    const ep = episodes?.find((e) => e.id === link.episodeId);
-    if (ep) episodeNameByEventId.set(link.eventId, ep.name);
+    if (episodeNameById.has(link.episodeId)) episodeIdByEventId.set(link.eventId, link.episodeId);
   });
 
-  const filterOptions = ['All', ...(episodes ?? []).map((e) => e.name)];
+  const filterOptions = [ALL, ...(episodes ?? []).map((e) => e.id)];
   const sorted = [...(events ?? [])].sort((a, b) => b.date.localeCompare(a.date));
   const filtered =
-    filter === 'All' ? sorted : sorted.filter((e) => episodeNameByEventId.get(e.id) === filter);
+    filter === ALL ? sorted : sorted.filter((e) => episodeIdByEventId.get(e.id) === filter);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -53,16 +57,16 @@ export default function Timeline() {
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 0 }} className="px-4 py-3" contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-        {filterOptions.map((ep) => (
+        {filterOptions.map((optionId) => (
           <Pressable
-            key={ep}
-            onPress={() => setFilter(ep)}
-            className={`rounded-full border px-3 py-1.5 ${filter === ep ? 'border-blue-600 bg-blue-600' : 'border-gray-300 bg-white'}`}
+            key={optionId}
+            onPress={() => setFilter(optionId)}
+            className={`rounded-full border px-3 py-1.5 ${filter === optionId ? 'border-blue-600 bg-blue-600' : 'border-gray-300 bg-white'}`}
           >
             <Text
-              className={`text-xs font-medium ${filter === ep ? 'text-white' : 'text-gray-700'}`}
+              className={`text-xs font-medium ${filter === optionId ? 'text-white' : 'text-gray-700'}`}
             >
-              {ep}
+              {optionId === ALL ? ALL : episodeNameById.get(optionId)}
             </Text>
           </Pressable>
         ))}
@@ -77,7 +81,8 @@ export default function Timeline() {
           </Text>
         ) : (
           filtered.map((event) => {
-            const episodeName = episodeNameByEventId.get(event.id);
+            const linkedEpisodeId = episodeIdByEventId.get(event.id);
+            const episodeName = linkedEpisodeId ? episodeNameById.get(linkedEpisodeId) : undefined;
             const complication = event.type === 'note' && /complicat|reopen|infect/i.test(event.notes ?? '');
             return (
               <Pressable
@@ -95,9 +100,18 @@ export default function Timeline() {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-xs text-gray-500">{formatDate(event.date)}</Text>
+                  <Text className="text-xs text-gray-500">
+                    {formatDate(event.date)}
+                    {event.status === 'cancelled' ? ' · Cancelled' : ''}
+                  </Text>
                   <Text
-                    className={`text-sm font-medium ${complication ? 'text-red-900' : 'text-gray-900'}`}
+                    className={`text-sm font-medium ${
+                      event.status === 'cancelled'
+                        ? 'text-gray-400 line-through'
+                        : complication
+                          ? 'text-red-900'
+                          : 'text-gray-900'
+                    }`}
                   >
                     {event.notes || event.diagnosis || event.treatment || event.type}
                   </Text>

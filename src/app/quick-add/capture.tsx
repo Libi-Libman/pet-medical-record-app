@@ -7,7 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMedicationDraft } from '@/context/medication-draft';
 import { useAuth } from '@/context/auth';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { insertEvent } from '@/lib/queries/useEvents';
 
 
@@ -19,7 +19,7 @@ export default function QuickAddCapture() {
   const [saving, setSaving] = useState(false);
   const { draftMeds, nextUnconfirmedMed, clearDraftMeds } = useMedicationDraft();
   const { session, isMockSession } = useAuth();
-  const { data: pets } = useOwnerPets();
+  const { pet } = useActivePet();
   const queryClient = useQueryClient();
   const isToday = date.toDateString() === new Date().toDateString();
   const formattedDate = isToday
@@ -27,12 +27,15 @@ export default function QuickAddCapture() {
     : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
   const canSave = (note.trim().length > 0 || hasPhoto || draftMeds.length > 0) && !saving;
+  const noPetYet = !pet;
 
   const handleSave = async () => {
-    // A typed note (with no photo) is its own timeline entry — save it as a
-    // real event before moving on, otherwise it's silently lost.
-    const petId = pets?.[0]?.id;
-    if (!hasPhoto && note.trim().length > 0 && session && !isMockSession && petId) {
+    // A typed note is its own timeline entry — save it as a real event
+    // before moving on, regardless of whether a photo was also attached
+    // (previously this only ran when there was no photo, which silently
+    // discarded anything typed alongside an attachment).
+    const petId = pet?.id;
+    if (note.trim().length > 0 && session && !isMockSession && petId) {
       setSaving(true);
       try {
         await insertEvent({
@@ -87,6 +90,17 @@ export default function QuickAddCapture() {
       </View>
 
       <View className="flex-1 px-4 pt-6 gap-4">
+        {noPetYet && (
+          <Pressable
+            onPress={() => router.push('/pet-list/add-pet')}
+            className="flex-row items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5"
+          >
+            <Feather name="alert-triangle" size={14} color="#92400E" />
+            <Text className="flex-1 text-xs text-amber-900">
+              No pet on file yet — this won't be saved until you add one. Tap to add a pet.
+            </Text>
+          </Pressable>
+        )}
         <View>
           <Text className="text-xs text-gray-500 mb-1">Date</Text>
           <Pressable
@@ -147,7 +161,7 @@ export default function QuickAddCapture() {
 
         <View className="flex-row gap-2">
           <Pressable
-            onPress={() => setHasPhoto(true)}
+            onPress={() => setHasPhoto((cur) => !cur)}
              className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl px-3 py-3 border ${hasPhoto ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-100'}`}
           >
             <Feather name="camera" size={16} color={hasPhoto ? '#1D4ED8' : '#5F5E5A'} />
@@ -157,7 +171,11 @@ export default function QuickAddCapture() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push('/quick-add/add-medication?from=capture')}
+            onPress={() =>
+              router.push(
+                `/quick-add/add-medication?from=capture&date=${date.toISOString().split('T')[0]}`
+              )
+            }
             className="flex-1 flex-row items-center justify-center gap-2 rounded-xl px-3 py-3 border bg-purple-50 border-purple-200"
           >
             <Feather name="plus-circle" size={16} color="#6B21A8" />

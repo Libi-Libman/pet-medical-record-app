@@ -1,29 +1,42 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { usePetAge } from '@/lib/dates/usePetAge';
 import { OwnerPet } from '@/types/owner-pet';
 
 type Props = {
   pet: OwnerPet;
+  active?: boolean;
+  onPress?: () => void;
 };
 
-export const PetCard = ({ pet }: Props) => {
+export const PetCard = ({ pet, active = false, onPress }: Props) => {
   const age = usePetAge(pet);
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.card, active && styles.cardActive]}
+    >
       <View style={styles.icon}>
         <MaterialCommunityIcons name="paw" size={26} color="#92400E" />
       </View>
 
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.name}>{pet.name}</Text>
         <Text style={styles.info}>
-          {pet.species} - {pet.breed} - {age}
+          {[pet.breed || pet.species, age].filter(Boolean).join(' · ')}
         </Text>
       </View>
-    </View>
+
+      {active ? (
+        <View style={styles.activeBadge}>
+          <Feather name="check" size={12} color="#1D4ED8" />
+          <Text style={styles.activeBadgeText}>Showing</Text>
+        </View>
+      ) : null}
+    </Pressable>
   );
 };
 
@@ -32,6 +45,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    borderRadius: 16,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  cardActive: {
+    borderColor: 'rgb(191 219 254)',
+    backgroundColor: 'rgb(239 246 255)',
   },
   icon: {
     width: 56,
@@ -51,5 +72,19 @@ const styles = StyleSheet.create({
     color: 'rgb(115 115 115)',
     fontSize: 12,
     lineHeight: 16,
+  },
+  activeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 9999,
+    backgroundColor: 'rgb(219 234 254)',
+  },
+  activeBadgeText: {
+    color: 'rgb(29 78 216)',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

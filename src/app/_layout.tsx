@@ -4,6 +4,7 @@ import { useColorScheme } from 'react-native';
 import "../../global.css";
 
 import { AuthProvider, useAuth } from '@/context/auth';
+import { ActivePetProvider } from '@/context/active-pet';
 import { MedicationDraftProvider } from '@/context/medication-draft';
 import { initQueryClient } from '@/lib/query-client';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -51,9 +52,11 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <MedicationDraftProvider>
-            <RootNavigator />
-          </MedicationDraftProvider>
+          <ActivePetProvider>
+            <MedicationDraftProvider>
+              <RootNavigator />
+            </MedicationDraftProvider>
+          </ActivePetProvider>
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>

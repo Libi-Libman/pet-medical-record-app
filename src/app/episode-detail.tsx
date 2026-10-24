@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { useEpisodes, EpisodeStatus } from '@/lib/queries/useEpisodes';
 import { useEvents, useEpisodeEventLinks, EventRow } from '@/lib/queries/useEvents';
 import { useMedications } from '@/lib/queries/useMedications';
@@ -43,8 +43,8 @@ const formatDate = (iso: string) =>
 
 export default function EpisodeDetail() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { data: pets } = useOwnerPets();
-  const petId = pets?.[0]?.id;
+  const { pet } = useActivePet();
+  const petId = pet?.id;
 
   const { data: episodes, isLoading: episodesLoading } = useEpisodes(petId);
   const episode = episodes?.find((e) => e.id === id);
@@ -57,7 +57,7 @@ export default function EpisodeDetail() {
     .filter((e) => linkedEventIds.has(e.id))
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const { data: medications } = useMedications();
+  const { data: medications } = useMedications(petId);
   const episodeMeds = (medications ?? []).filter((m) => m.episodeId === id);
 
   if (episodesLoading) {

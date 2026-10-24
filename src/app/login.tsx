@@ -11,8 +11,13 @@ export default function Login() {
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
-  const canSendCode = email.trim().length > 3 && email.includes('@');
+  // A real (if simple) email shape check rather than just "contains an @
+  // sign and is more than 3 characters", which let through obviously
+  // malformed addresses before ever hitting Supabase.
+  const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const canSendCode = EMAIL_PATTERN.test(email.trim());
   const canVerify = code.trim().length >= 4;
 
   const handleSendCode = async () => {
@@ -35,6 +40,19 @@ export default function Login() {
     if (error) setError(error);
     // On success, the auth state listener updates the session and the root layout
     // redirects away from /login automatically.
+  };
+
+  const handleResend = async () => {
+    setBusy(true);
+    setError(null);
+    setResent(false);
+    const { error } = await sendCode(email.trim());
+    setBusy(false);
+    if (error) {
+      setError(error);
+      return;
+    }
+    setResent(true);
   };
 
   return (
@@ -107,6 +125,12 @@ export default function Login() {
                   Verify & sign in
                 </Text>
               )}
+            </Pressable>
+            {resent && (
+              <Text className="text-xs text-green-700 text-center">Sent a new code to {email}.</Text>
+            )}
+            <Pressable onPress={handleResend} disabled={busy}>
+              <Text className="text-xs text-blue-700 text-center">Resend code</Text>
             </Pressable>
             <Pressable onPress={() => setStep('email')} disabled={busy}>
               <Text className="text-xs text-blue-700 text-center">Use a different email</Text>

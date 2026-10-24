@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth';
 import { useMedications, insertMedication, MedicationRow } from '@/lib/queries/useMedications';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { describeFrequency, FrequencyType } from '@/lib/medications/frequency';
 import { parseDose, formatDose } from '@/lib/medications/parseDose';
 
@@ -24,6 +24,17 @@ export type DraftMedication = {
   // frequency_type/frequency_interval on save (see getFrequencyPlan)
   source: MedicationSource;
   reminder?: MedicationReminder;
+  // The date this medication actually started, e.g. backdated from the
+  // quick-add capture screen's date picker. Undefined when added directly
+  // (not through a capture with a chosen date) — falls back to today at
+  // save time. Not to be confused with endDate below, which only exists
+  // once the row round-trips through Supabase.
+  startDate?: string;
+  // Only populated for medications hydrated from a real Supabase row
+  // (see fromRow) — used to tell current vs. discontinued medications
+  // apart on Home. Freshly-confirmed-this-session medications won't have
+  // it until the next refetch replaces them.
+  endDate?: string | null;
 };
 
 // A medication that's been through the full quick-add flow and had its
@@ -40,6 +51,7 @@ type NewDraftMedication = {
   dose: string;
   frequency: string;
   source?: MedicationSource;
+  startDate?: string;
 };
 
 type MedicationDraftContextType = {
@@ -64,6 +76,8 @@ const fromRow = (row: MedicationRow): ConfirmedMedication => ({
   dose: formatDose(row.dose, row.doseUnit),
   frequency: describeFrequency(row.frequencyType, row.frequencyInterval),
   source: row.source,
+  startDate: row.startDate,
+  endDate: row.endDate,
   reminder: {
     // Postgres returns `time` as 'HH:MM:SS' — trim to 'HH:MM' to match what
     // the reminder screen writes and displays.
@@ -78,14 +92,14 @@ const today = () => new Date().toISOString().slice(0, 10);
 export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   const { session, isMockSession } = useAuth();
   const queryClient = useQueryClient();
-  const { data: pets } = useOwnerPets();
-  const currentPetId = pets?.[0]?.id;
+  const { pet: activePet } = useActivePet();
+  const currentPetId = activePet?.id;
   const [draftMeds, setDraftMeds] = useState<DraftMedication[]>([]);
   const [medications, setMedications] = useState<ConfirmedMedication[]>([]);
 
   // Real Supabase data for the signed-in owner. Disabled under the mock
   // session (see useMedications) — there's no real JWT to query with.
-  const { data: persistedMedications, isLoading: medicationsLoading } = useMedications();
+  const { data: persistedMedications, isLoading: medicationsLoading } = useMedications(currentPetId);
 
   // Hydrate local state from Supabase whenever the real, persisted list
   // changes (first load, after a mutation invalidates it, sign-in, etc).
@@ -110,6 +124,7 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
       id: Date.now().toString(),
       source: med.source ?? 'owner_entered',
     };
+    // (startDate carries through via the spread above, if provided)
     setDraftMeds((cur) => [...cur, newMed]);
     return newMed;
   };
@@ -158,10 +173,13 @@ export function MedicationDraftProvider({ children }: { children: ReactNode }) {
         frequencyType: reminder.frequencyType,
         frequencyInterval: reminder.frequencyInterval,
         reminderTimes: reminder.times,
-        startDate: today(),
+        // Respect a backdated date picked on the capture screen (e.g.
+        // logging a medication that actually started a few days ago)
+        // rather than always stamping it with today's date.
+        startDate: med.startDate ?? today(),
         source: med.source,
       });
-      queryClient.invalidateQueries({ queryKey: ['medications', 'owner', session.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['medications', 'pet', currentPetId] });
     } catch (error) {
       // Local state already reflects the confirmed medication so the flow
       // isn't blocked, but it won't survive a reload until this succeeds —

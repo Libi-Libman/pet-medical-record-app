@@ -92,6 +92,19 @@ export const updateEpisode = async (
 };
 
 export const deleteEpisode = async (id: string): Promise<void> => {
+  // Clear out references first so this doesn't fail with a raw
+  // foreign-key error if episode_events/medications don't cascade: unlink
+  // any events (the events themselves stay, just no longer tied to this
+  // condition) and null out any medication's episode_id pointing here.
+  const { error: unlinkError } = await supabase.from('episode_events').delete().eq('episode_id', id);
+  if (unlinkError) throw unlinkError;
+
+  const { error: medsError } = await supabase
+    .from('medications')
+    .update({ episode_id: null })
+    .eq('episode_id', id);
+  if (medsError) throw medsError;
+
   const { error } = await supabase.from('episodes').delete().eq('id', id);
   if (error) throw error;
 };

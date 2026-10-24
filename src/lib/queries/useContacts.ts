@@ -113,6 +113,18 @@ export const updateContact = async (
       .update({ primary_contact_id: contact.id })
       .eq('id', input.petId);
     if (petError) throw petError;
+
+    // Clear the stale primary flag off whichever contact used to hold it,
+    // so there's never more than one contact claiming role='primary' for
+    // this pet at a time (pets.primary_contact_id is the source of truth,
+    // but a contact's own row shouldn't keep claiming the role too).
+    const { error: demoteError } = await supabase
+      .from('contacts')
+      .update({ role: 'specialist', is_primary: false })
+      .eq('pet_id', input.petId)
+      .eq('is_primary', true)
+      .neq('id', contact.id);
+    if (demoteError) throw demoteError;
   } else {
     // If this contact was the pet's primary vet and is no longer marked
     // primary, clear the pet's pointer rather than leaving it dangling on
@@ -135,7 +147,25 @@ export const updateContact = async (
   return contact;
 };
 
-export const deleteContact = async (id: string): Promise<void> => {
+export const deleteContact = async (id: string, petId: string): Promise<void> => {
+  // If this contact is the pet's current primary vet, clear the pointer
+  // first — otherwise deleting it could fail on a foreign-key constraint,
+  // or leave pets.primary_contact_id dangling if the constraint doesn't
+  // enforce that.
+  const { data: pet, error: petFetchError } = await supabase
+    .from('pets')
+    .select('primary_contact_id')
+    .eq('id', petId)
+    .single();
+  if (petFetchError) throw petFetchError;
+  if (pet?.primary_contact_id === id) {
+    const { error: clearError } = await supabase
+      .from('pets')
+      .update({ primary_contact_id: null })
+      .eq('id', petId);
+    if (clearError) throw clearError;
+  }
+
   const { error } = await supabase.from('contacts').delete().eq('id', id);
   if (error) throw error;
 };

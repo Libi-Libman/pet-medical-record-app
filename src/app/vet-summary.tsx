@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { usePetAge } from '@/lib/dates/usePetAge';
 import { useEpisodes, isActiveEpisode } from '@/lib/queries/useEpisodes';
 import { useEvents } from '@/lib/queries/useEvents';
@@ -16,8 +16,7 @@ const formatDate = (iso: string) =>
   new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 export default function VetSummary() {
-  const { data: pets, isLoading: petsLoading } = useOwnerPets();
-  const pet = pets?.[0];
+  const { pet, petsLoading } = useActivePet();
   const petAge = pet ? usePetAge(pet) : undefined;
 
   const { data: episodes } = useEpisodes(pet?.id);
@@ -39,7 +38,7 @@ export default function VetSummary() {
   const { data: contacts } = useContacts(pet?.id);
   const primaryContact = contacts?.find((c) => c.id === pet?.primaryContactId) ?? contacts?.find((c) => c.isPrimary);
 
-  const { data: medications } = useMedications();
+  const { data: medications } = useMedications(pet?.id);
   const currentMedications = (medications ?? []).filter((m) => !m.endDate || m.endDate >= todayStr);
 
   if (petsLoading) {
@@ -73,7 +72,11 @@ export default function VetSummary() {
             <Text className="text-sm text-gray-600">
               {[
                 pet.breed || pet.species,
-                `${pet.sex === 'male' ? 'Male' : 'Female'}${pet.sterilized ? ` (${pet.sex === 'male' ? 'neutered' : 'spayed'})` : ''}`,
+                pet.sex
+                  ? `${pet.sex === 'male' ? 'Male' : 'Female'}${
+                      pet.sterilized ? ` (${pet.sex === 'male' ? 'neutered' : 'spayed'})` : ''
+                    }`
+                  : null,
                 petAge,
               ]
                 .filter(Boolean)

@@ -2,10 +2,10 @@ import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { useEpisodes } from '@/lib/queries/useEpisodes';
 import {
   useEvents,
@@ -35,8 +35,8 @@ export default function AddEvent() {
   }>();
   const isEditing = !!id;
 
-  const { data: pets } = useOwnerPets();
-  const petId = pets?.[0]?.id;
+  const { pet } = useActivePet();
+  const petId = pet?.id;
   const { data: episodes } = useEpisodes(petId);
   const { data: events } = useEvents(petId);
   const { data: links } = useEpisodeEventLinks(petId);
@@ -52,6 +52,7 @@ export default function AddEvent() {
   const [diagnosis, setDiagnosis] = useState(existing?.diagnosis ?? '');
   const [treatment, setTreatment] = useState(existing?.treatment ?? '');
   const [episodeId, setEpisodeId] = useState<string | null>(initialEpisodeId ?? null);
+  const [cancelled, setCancelled] = useState(existing?.status === 'cancelled');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +62,22 @@ export default function AddEvent() {
   useEffect(() => {
     if (isEditing && existingLink) setEpisodeId(existingLink.episodeId);
   }, [isEditing, existingLink?.episodeId]);
+
+  // `existing` can still be undefined at mount (events query not resolved
+  // yet, e.g. a direct page load on this URL) — the useState initializers
+  // above only run once, so backfill the rest of the form once it arrives.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current || !existing) return;
+    hydratedRef.current = true;
+    setType(existing.type);
+    setDate(new Date(existing.date + 'T00:00:00'));
+    setClinicName(existing.clinicName ?? '');
+    setNotes(existing.notes ?? '');
+    setDiagnosis(existing.diagnosis ?? '');
+    setTreatment(existing.treatment ?? '');
+    setCancelled(existing.status === 'cancelled');
+  }, [existing]);
 
   const isAppointment = type === 'appointment';
   const canSave =
@@ -73,8 +90,15 @@ export default function AddEvent() {
     try {
       // Any event dated in the future is still "scheduled" regardless of
       // type, not just appointments — a visit or test booked ahead of time
-      // shouldn't be marked completed before it happens.
-      const status: EventStatus = dateToInput(date) > dateToInput(new Date()) ? 'scheduled' : 'completed';
+      // shouldn't be marked completed before it happens. An explicit
+      // "cancelled" mark always wins, and editing without touching it
+      // keeps it cancelled rather than silently flipping back to
+      // scheduled/completed.
+      const status: EventStatus = cancelled
+        ? 'cancelled'
+        : dateToInput(date) > dateToInput(new Date())
+          ? 'scheduled'
+          : 'completed';
       const payload = {
         type,
         date: dateToInput(date),
@@ -198,10 +222,11 @@ export default function AddEvent() {
                 value={date}
                 mode="date"
                 display="default"
-                onChange={(_event, selected) => {
+                onValueChange={(_event, selected) => {
                   setShowPicker(false);
                   if (selected) setDate(selected);
                 }}
+                onDismiss={() => setShowPicker(false)}
               />
             )
           )}
@@ -273,6 +298,16 @@ export default function AddEvent() {
               ))}
             </View>
           </View>
+        )}
+
+        {isEditing && (isAppointment || existing?.status === 'scheduled' || existing?.status === 'cancelled') && (
+          <Pressable
+            onPress={() => setCancelled((cur) => !cur)}
+            className={`flex-row items-center justify-between rounded-xl px-3 py-2.5 border ${cancelled ? 'bg-neutral-100 border-neutral-300' : 'bg-white border-gray-200'}`}
+          >
+            <Text className="text-sm text-gray-800">Cancelled</Text>
+            <Feather name={cancelled ? 'check-square' : 'square'} size={16} color={cancelled ? '#404040' : '#A3A3A3'} />
+          </Pressable>
         )}
 
         {error && (

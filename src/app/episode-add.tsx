@@ -2,10 +2,10 @@ import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { useEpisodes, insertEpisode, updateEpisode, deleteEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
 
 const STATUS_OPTIONS: { value: EpisodeStatus; label: string }[] = [
@@ -21,8 +21,8 @@ export default function AddEpisode() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = !!id;
 
-  const { data: pets } = useOwnerPets();
-  const petId = pets?.[0]?.id;
+  const { pet } = useActivePet();
+  const petId = pet?.id;
   const { data: episodes } = useEpisodes(petId);
   const existing = isEditing ? episodes?.find((e) => e.id === id) : undefined;
   const queryClient = useQueryClient();
@@ -38,6 +38,23 @@ export default function AddEpisode() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // `existing` can still be undefined at mount (e.g. the episodes query
+  // hasn't resolved yet — a direct page load/refresh on this URL rather
+  // than navigating here from a screen that already had it cached). The
+  // useState initializers above only run once, so without this the form
+  // would stay blank forever once the real data arrives. Only backfills
+  // once, so it doesn't clobber edits already in progress.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current || !existing) return;
+    hydratedRef.current = true;
+    setName(existing.name);
+    setCategory(existing.category ?? '');
+    setStatus(existing.status);
+    setOnsetDate(existing.onsetDate ? new Date(existing.onsetDate + 'T00:00:00') : null);
+    setStatusNote(existing.currentStatusNote ?? '');
+  }, [existing]);
 
   const canSave = name.trim().length > 0 && !!petId && !saving && !deleting;
 
@@ -186,10 +203,11 @@ export default function AddEpisode() {
                 mode="date"
                 display="default"
                 maximumDate={new Date()}
-                onChange={(_event, selected) => {
+                onValueChange={(_event, selected) => {
                   setShowPicker(false);
                   if (selected) setOnsetDate(selected);
                 }}
+                onDismiss={() => setShowPicker(false)}
               />
             )
           )}

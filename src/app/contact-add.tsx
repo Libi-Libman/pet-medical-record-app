@@ -2,17 +2,17 @@ import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { useContacts, insertContact, updateContact, deleteContact } from '@/lib/queries/useContacts';
 
 export default function AddContact() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = !!id;
 
-  const { data: pets } = useOwnerPets();
-  const petId = pets?.[0]?.id;
+  const { pet } = useActivePet();
+  const petId = pet?.id;
   const { data: contacts } = useContacts(petId);
   const existing = isEditing ? contacts?.find((c) => c.id === id) : undefined;
   const queryClient = useQueryClient();
@@ -26,6 +26,21 @@ export default function AddContact() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // `existing` can still be undefined at mount (contacts query not
+  // resolved yet) — backfill once it arrives rather than leaving the form
+  // blank forever.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current || !existing) return;
+    hydratedRef.current = true;
+    setName(existing.name);
+    setClinicName(existing.clinicName ?? '');
+    setRole(existing.role ?? 'primary');
+    setSpecialty(existing.specialty ?? '');
+    setPhone(existing.phone ?? '');
+    setEmail(existing.email ?? '');
+  }, [existing]);
 
   const canSave = name.trim().length > 0 && !!petId && !saving && !deleting;
 
@@ -62,11 +77,11 @@ export default function AddContact() {
   };
 
   const doDelete = async () => {
-    if (!id) return;
+    if (!id || !petId) return;
     setDeleting(true);
     setError(null);
     try {
-      await deleteContact(id);
+      await deleteContact(id, petId);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['contacts', 'pet', petId] }),
         queryClient.invalidateQueries({ queryKey: ['pets', 'owner'] }),

@@ -27,7 +27,7 @@ export default function AddPet() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSave = name.trim().length > 0 && !saving;
+  const canSave = name.trim().length > 0 && !!sex && !saving;
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -102,7 +102,7 @@ export default function AddPet() {
         </View>
 
         <View>
-          <Text className="text-xs text-gray-500 mb-2">Sex</Text>
+          <Text className="text-xs text-gray-500 mb-2">Sex (required)</Text>
           <View className="flex-row gap-2">
             {(['male', 'female'] as const).map((s) => (
               <Pressable
@@ -173,10 +173,11 @@ export default function AddPet() {
                 mode="date"
                 display="default"
                 maximumDate={new Date()}
-                onChange={(_event, selected) => {
+                onValueChange={(_event, selected) => {
                   setShowPicker(false);
                   if (selected) setBirthDate(selected);
                 }}
+                onDismiss={() => setShowPicker(false)}
               />
             )
           )}

@@ -1,12 +1,12 @@
 import { PetCard } from '@/components/pet-list/PetCard';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PetList = () => {
-  const { data: pets = [], isLoading } = useOwnerPets();
+  const { pets, petsLoading: isLoading, pet: activePet, setActivePetId } = useActivePet();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -30,8 +30,17 @@ const PetList = () => {
         <Text style={styles.empty}>No pets yet — tap "Add pet" to get started.</Text>
       )}
 
+      {pets.length > 1 && (
+        <Text style={styles.hint}>Tap a pet to switch which one the rest of the app shows.</Text>
+      )}
+
       {pets.map((pet) => (
-        <PetCard key={pet.id} pet={pet} />
+        <PetCard
+          key={pet.id}
+          pet={pet}
+          active={pet.id === activePet?.id}
+          onPress={() => setActivePetId(pet.id)}
+        />
       ))}
     </SafeAreaView>
   );
@@ -80,6 +89,11 @@ const styles = StyleSheet.create({
   empty: {
     color: 'rgb(115 115 115)',
     fontSize: 13,
+    paddingHorizontal: 8,
+  },
+  hint: {
+    color: 'rgb(115 115 115)',
+    fontSize: 12,
     paddingHorizontal: 8,
   },
 });

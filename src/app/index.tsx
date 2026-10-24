@@ -1,14 +1,15 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { SectionHeader } from '@/components/section-header';
 import { QuickActionButton } from '@/components/quick-action-button';
 import { ConditionCard } from '@/components/condition-card';
 import { MedicationRow } from '@/components/medication-row';
 import { useAuth } from '@/context/auth';
 import { useMedicationDraft } from '@/context/medication-draft';
-import { useOwnerPets } from '@/lib/queries/useOwnerPets';
+import { useActivePet } from '@/context/active-pet';
 import { usePetAge } from '@/lib/dates/usePetAge';
 import { useEpisodes, isActiveEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
 import { useEvents } from '@/lib/queries/useEvents';
@@ -26,17 +27,38 @@ const formatEventDate = (iso: string) =>
 
 export default function HomeScreen() {
   const { signOut } = useAuth();
-  const { medications } = useMedicationDraft();
-  const { data: pets, isLoading: petsLoading } = useOwnerPets();
-  const pet = pets?.[0];
+  const { medications: allMedications, draftMeds, clearDraftMeds } = useMedicationDraft();
+
+  // A medication that was added to a capture or "Add a medication" flow
+  // but never had its reminder confirmed (backed out partway through)
+  // would otherwise sit in memory and unexpectedly resurface — chaining
+  // into the reminder flow — the next time any medication is confirmed.
+  // Every *successful* flow already clears drafts before landing here, so
+  // anything still present when Home regains focus was abandoned.
+  useFocusEffect(
+    useCallback(() => {
+      if (draftMeds.length > 0) clearDraftMeds();
+    }, [draftMeds.length, clearDraftMeds])
+  );
+  const today = new Date().toISOString().split('T')[0];
+  // Discontinued medications (end_date already passed) shouldn't linger on
+  // the daily checklist — vet-summary already applies this same filter for
+  // "current medications", Home just never did.
+  const medications = allMedications.filter((m) => !m.endDate || m.endDate >= today);
+  const { pet, petsLoading } = useActivePet();
   const petAge = pet ? usePetAge(pet) : undefined;
-  const petHowDoing = pet ? (pet.sex === 'male' ? "How he's doing" : "How she's doing") : "How they're doing";
+  const petHowDoing = !pet
+    ? "How they're doing"
+    : pet.sex === 'male'
+      ? "How he's doing"
+      : pet.sex === 'female'
+        ? "How she's doing"
+        : "How they're doing";
 
   const { data: episodes, isLoading: episodesLoading } = useEpisodes(pet?.id);
   const activeEpisodes = (episodes ?? []).filter((e) => isActiveEpisode(e.status));
 
   const { data: events, isLoading: eventsLoading } = useEvents(pet?.id);
-  const today = new Date().toISOString().split('T')[0];
   const nextAppointment = (events ?? [])
     .filter((e) => e.type === 'appointment' && e.status === 'scheduled' && e.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date))[0];
