@@ -99,11 +99,16 @@ export default function VetSummary() {
               <Text className="text-sm text-red-900">None recorded</Text>
             ) : (
               allergies!.map((a) => (
-                <Text key={a.id} className="text-sm text-red-900">
-                  {a.substance}
-                  {a.reaction ? ` — ${a.reaction}` : ''}
-                  {a.dateIdentified ? ` (${new Date(a.dateIdentified + 'T00:00:00').getFullYear()})` : ''}
-                </Text>
+                <Pressable
+                  key={a.id}
+                  onPress={() => router.push({ pathname: '/allergy-add' as any, params: { id: a.id } })}
+                >
+                  <Text className="text-sm text-red-900">
+                    {a.substance}
+                    {a.reaction ? ` — ${a.reaction}` : ''}
+                    {a.dateIdentified ? ` (${new Date(a.dateIdentified + 'T00:00:00').getFullYear()})` : ''}
+                  </Text>
+                </Pressable>
               ))
             )}
           </View>
@@ -189,10 +194,14 @@ export default function VetSummary() {
               </Pressable>
             </View>
             {primaryContact ? (
-              <Text className="text-sm text-gray-700">
-                {primaryContact.name}
-                {primaryContact.clinicName ? ` — ${primaryContact.clinicName}` : ''}
-              </Text>
+              <Pressable
+                onPress={() => router.push({ pathname: '/contact-add' as any, params: { id: primaryContact.id } })}
+              >
+                <Text className="text-sm text-gray-700">
+                  {primaryContact.name}
+                  {primaryContact.clinicName ? ` — ${primaryContact.clinicName}` : ''}
+                </Text>
+              </Pressable>
             ) : (
               <Text className="text-sm text-gray-500">Not set</Text>
             )}

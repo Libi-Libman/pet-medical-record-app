@@ -109,3 +109,54 @@ export const insertEvent = async (input: {
 
   return event;
 };
+
+export const updateEvent = async (
+  id: string,
+  input: {
+    type: EventType;
+    date: string;
+    clinicName: string | null;
+    notes: string | null;
+    diagnosis: string | null;
+    treatment: string | null;
+    status: EventStatus | null;
+    episodeId?: string | null;
+  }
+): Promise<EventRow> => {
+  const { data, error } = await supabase
+    .from('events')
+    .update({
+      type: input.type,
+      date: input.date,
+      clinic_name: input.clinicName,
+      notes: input.notes,
+      diagnosis: input.diagnosis,
+      treatment: input.treatment,
+      status: input.status,
+    })
+    .eq('id', id)
+    .select(
+      'id, petId:pet_id, type, date, datePrecision:date_precision, clinicName:clinic_name, notes, symptoms, findings, diagnosis, treatment, source, status, createdAt:created_at'
+    )
+    .single();
+  if (error) throw error;
+  const event = data as unknown as EventRow;
+
+  // Replace any existing episode link with whatever was chosen on save
+  // (including none), rather than trying to diff old vs. new.
+  const { error: unlinkError } = await supabase.from('episode_events').delete().eq('event_id', id);
+  if (unlinkError) throw unlinkError;
+  if (input.episodeId) {
+    const { error: linkError } = await supabase
+      .from('episode_events')
+      .insert({ episode_id: input.episodeId, event_id: id });
+    if (linkError) throw linkError;
+  }
+
+  return event;
+};
+
+export const deleteEvent = async (id: string): Promise<void> => {
+  const { error } = await supabase.from('events').delete().eq('id', id);
+  if (error) throw error;
+};

@@ -80,8 +80,9 @@ export default function Timeline() {
             const episodeName = episodeNameByEventId.get(event.id);
             const complication = event.type === 'note' && /complicat|reopen|infect/i.test(event.notes ?? '');
             return (
-              <View
+              <Pressable
                 key={event.id}
+                onPress={() => router.push({ pathname: '/event-add' as any, params: { id: event.id } })}
                 className={`flex-row gap-3 rounded-2xl border p-3 ${complication ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-gray-50'}`}
               >
                 <View
@@ -106,7 +107,7 @@ export default function Timeline() {
                     </View>
                   )}
                 </View>
-              </View>
+              </Pressable>
             );
           })
         )}

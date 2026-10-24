@@ -98,7 +98,15 @@ export default function EpisodeDetail() {
           <View style={{ width: 18 }} />
         </View>
 
-        <Text className="mb-2 text-lg font-semibold text-neutral-900">{episode.name}</Text>
+        <View className="mb-2 flex-row items-center justify-between">
+          <Text className="text-lg font-semibold text-neutral-900">{episode.name}</Text>
+          <Pressable
+            onPress={() => router.push({ pathname: '/episode-add' as any, params: { id: episode.id } })}
+            hitSlop={10}
+          >
+            <Feather name="edit-2" size={15} color="#737373" />
+          </Pressable>
+        </View>
         <View className="mb-4 flex-row flex-wrap items-center gap-1.5">
           <View className={`rounded-md px-2 py-0.5 ${statusBg[episode.status]}`}>
             <Text className={`text-xs ${statusText[episode.status]}`}>{statusLabel[episode.status]}</Text>
@@ -136,7 +144,11 @@ export default function EpisodeDetail() {
             <Text className="text-xs text-neutral-400">No events linked to this condition yet.</Text>
           ) : (
             episodeEvents.map((e) => (
-              <View key={e.id} className="flex-row gap-2">
+              <Pressable
+                key={e.id}
+                onPress={() => router.push({ pathname: '/event-add' as any, params: { id: e.id } })}
+                className="flex-row gap-2"
+              >
                 <Feather name={eventTypeIcon[e.type]} size={14} color="#A3A3A3" style={{ marginTop: 1 }} />
                 <View className="flex-1">
                   <Text className="text-xs text-neutral-900">
@@ -147,7 +159,7 @@ export default function EpisodeDetail() {
                     {e.clinicName ? ` · ${e.clinicName}` : ''}
                   </Text>
                 </View>
-              </View>
+              </Pressable>
             ))
           )}
         </View>

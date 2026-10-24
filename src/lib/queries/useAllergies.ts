@@ -52,3 +52,32 @@ export const insertAllergy = async (input: {
   if (error) throw error;
   return data as unknown as AllergyRow;
 };
+
+export const updateAllergy = async (
+  id: string,
+  input: {
+    substance: string;
+    reaction: string | null;
+    severity: string | null;
+    dateIdentified: string | null;
+  }
+): Promise<AllergyRow> => {
+  const { data, error } = await supabase
+    .from('allergies')
+    .update({
+      substance: input.substance,
+      reaction: input.reaction,
+      severity: input.severity,
+      date_identified: input.dateIdentified,
+    })
+    .eq('id', id)
+    .select(SELECT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data as unknown as AllergyRow;
+};
+
+export const deleteAllergy = async (id: string): Promise<void> => {
+  const { error } = await supabase.from('allergies').delete().eq('id', id);
+  if (error) throw error;
+};

@@ -1,13 +1,21 @@
-import { View, Text, TextInput, Pressable, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useOwnerPets } from '@/lib/queries/useOwnerPets';
 import { useEpisodes } from '@/lib/queries/useEpisodes';
-import { insertEvent, EventType, EventStatus } from '@/lib/queries/useEvents';
+import {
+  useEvents,
+  useEpisodeEventLinks,
+  insertEvent,
+  updateEvent,
+  deleteEvent,
+  EventType,
+  EventStatus,
+} from '@/lib/queries/useEvents';
 
 const TYPE_OPTIONS: { value: EventType; label: string }[] = [
   { value: 'visit', label: 'Vet visit' },
@@ -20,25 +28,43 @@ const TYPE_OPTIONS: { value: EventType; label: string }[] = [
 const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 
 export default function AddEvent() {
-  const { type: initialType, episodeId: initialEpisodeId } = useLocalSearchParams<{ type?: EventType; episodeId?: string }>();
+  const { id, type: initialType, episodeId: initialEpisodeId } = useLocalSearchParams<{
+    id?: string;
+    type?: EventType;
+    episodeId?: string;
+  }>();
+  const isEditing = !!id;
+
   const { data: pets } = useOwnerPets();
   const petId = pets?.[0]?.id;
   const { data: episodes } = useEpisodes(petId);
+  const { data: events } = useEvents(petId);
+  const { data: links } = useEpisodeEventLinks(petId);
+  const existing = isEditing ? events?.find((e) => e.id === id) : undefined;
+  const existingLink = isEditing ? links?.find((l) => l.eventId === id) : undefined;
   const queryClient = useQueryClient();
 
-  const [type, setType] = useState<EventType>(initialType ?? 'note');
-  const [date, setDate] = useState(new Date());
+  const [type, setType] = useState<EventType>(existing?.type ?? initialType ?? 'note');
+  const [date, setDate] = useState(existing ? new Date(existing.date + 'T00:00:00') : new Date());
   const [showPicker, setShowPicker] = useState(false);
-  const [clinicName, setClinicName] = useState('');
-  const [notes, setNotes] = useState('');
-  const [diagnosis, setDiagnosis] = useState('');
-  const [treatment, setTreatment] = useState('');
+  const [clinicName, setClinicName] = useState(existing?.clinicName ?? '');
+  const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [diagnosis, setDiagnosis] = useState(existing?.diagnosis ?? '');
+  const [treatment, setTreatment] = useState(existing?.treatment ?? '');
   const [episodeId, setEpisodeId] = useState<string | null>(initialEpisodeId ?? null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // The existing link loads asynchronously (a second query), so seed the
+  // episode selection once it arrives rather than only at mount.
+  useEffect(() => {
+    if (isEditing && existingLink) setEpisodeId(existingLink.episodeId);
+  }, [isEditing, existingLink?.episodeId]);
+
   const isAppointment = type === 'appointment';
-  const canSave = !!petId && !saving && (notes.trim().length > 0 || diagnosis.trim().length > 0 || isAppointment);
+  const canSave =
+    !!petId && !saving && !deleting && (notes.trim().length > 0 || diagnosis.trim().length > 0 || isAppointment);
 
   const handleSave = async () => {
     if (!canSave || !petId) return;
@@ -49,8 +75,7 @@ export default function AddEvent() {
       // type, not just appointments — a visit or test booked ahead of time
       // shouldn't be marked completed before it happens.
       const status: EventStatus = dateToInput(date) > dateToInput(new Date()) ? 'scheduled' : 'completed';
-      await insertEvent({
-        petId,
+      const payload = {
         type,
         date: dateToInput(date),
         clinicName: clinicName.trim() || null,
@@ -59,7 +84,12 @@ export default function AddEvent() {
         treatment: treatment.trim() || null,
         status,
         episodeId,
-      });
+      };
+      if (isEditing && id) {
+        await updateEvent(id, payload);
+      } else {
+        await insertEvent({ petId, ...payload });
+      }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', 'pet', petId] }),
         queryClient.invalidateQueries({ queryKey: ['episode-events', 'pet', petId] }),
@@ -72,15 +102,53 @@ export default function AddEvent() {
     }
   };
 
+  const doDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await deleteEvent(id);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', 'pet', petId] }),
+        queryClient.invalidateQueries({ queryKey: ['episode-events', 'pet', petId] }),
+      ]);
+      router.back();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not delete this entry.');
+      setDeleting(false);
+    }
+  };
+
+  const handleDelete = () => {
+    if (Platform.OS === 'web') {
+      // @ts-ignore - web-only global
+      if (typeof window !== 'undefined' && window.confirm('Delete this entry? This cannot be undone.')) {
+        doDelete();
+      }
+      return;
+    }
+    Alert.alert('Delete this entry?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: doDelete },
+    ]);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row items-center gap-3 px-4 pt-2 pb-3 border-b border-gray-100">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Feather name="arrow-left" size={22} color="#2C2C2A" />
-        </Pressable>
-        <Text className="text-base font-semibold text-gray-900">
-          {isAppointment ? 'Add appointment' : 'Add timeline entry'}
-        </Text>
+      <View className="flex-row items-center justify-between gap-3 px-4 pt-2 pb-3 border-b border-gray-100">
+        <View className="flex-row items-center gap-3">
+          <Pressable onPress={() => router.back()} hitSlop={10}>
+            <Feather name="arrow-left" size={22} color="#2C2C2A" />
+          </Pressable>
+          <Text className="text-base font-semibold text-gray-900">
+            {isEditing ? 'Edit entry' : isAppointment ? 'Add appointment' : 'Add timeline entry'}
+          </Text>
+        </View>
+        {isEditing && (
+          <Pressable onPress={handleDelete} hitSlop={10} disabled={deleting}>
+            <Feather name="trash-2" size={18} color="#991B1B" />
+          </Pressable>
+        )}
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6" contentContainerStyle={{ gap: 16, paddingBottom: 24 }}>
@@ -220,9 +288,9 @@ export default function AddEvent() {
           onPress={handleSave}
           className={`flex-row items-center justify-center gap-2 py-3.5 rounded-2xl ${canSave ? 'bg-blue-600' : 'bg-gray-200'}`}
         >
-          <Feather name="plus" size={16} color={canSave ? 'white' : '#9CA3AF'} />
+          <Feather name={isEditing ? 'check' : 'plus'} size={16} color={canSave ? 'white' : '#9CA3AF'} />
           <Text className={`font-semibold ${canSave ? 'text-white' : 'text-gray-400'}`}>
-            {saving ? 'Saving…' : isAppointment ? 'Save appointment' : 'Save entry'}
+            {saving ? 'Saving…' : isEditing ? 'Save changes' : isAppointment ? 'Save appointment' : 'Save entry'}
           </Text>
         </Pressable>
       </View>

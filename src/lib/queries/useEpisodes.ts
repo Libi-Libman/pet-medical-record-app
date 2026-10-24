@@ -64,3 +64,34 @@ export const insertEpisode = async (input: {
   if (error) throw error;
   return data as unknown as EpisodeRow;
 };
+
+export const updateEpisode = async (
+  id: string,
+  input: {
+    name: string;
+    category: string | null;
+    status: EpisodeStatus;
+    onsetDate: string | null;
+    currentStatusNote: string | null;
+  }
+): Promise<EpisodeRow> => {
+  const { data, error } = await supabase
+    .from('episodes')
+    .update({
+      name: input.name,
+      category: input.category,
+      status: input.status,
+      onset_date: input.onsetDate,
+      current_status_note: input.currentStatusNote,
+    })
+    .eq('id', id)
+    .select(SELECT_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data as unknown as EpisodeRow;
+};
+
+export const deleteEpisode = async (id: string): Promise<void> => {
+  const { error } = await supabase.from('episodes').delete().eq('id', id);
+  if (error) throw error;
+};

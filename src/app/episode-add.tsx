@@ -1,50 +1,63 @@
-import { View, Text, TextInput, Pressable, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useOwnerPets } from '@/lib/queries/useOwnerPets';
-import { insertEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
+import { useEpisodes, insertEpisode, updateEpisode, deleteEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
 
 const STATUS_OPTIONS: { value: EpisodeStatus; label: string }[] = [
   { value: 'active', label: 'Active · being treated' },
   { value: 'chronic_active', label: 'Chronic · ongoing' },
   { value: 'monitoring', label: 'Monitoring' },
+  { value: 'resolved', label: 'Resolved' },
 ];
 
 const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 
 export default function AddEpisode() {
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const isEditing = !!id;
+
   const { data: pets } = useOwnerPets();
   const petId = pets?.[0]?.id;
+  const { data: episodes } = useEpisodes(petId);
+  const existing = isEditing ? episodes?.find((e) => e.id === id) : undefined;
   const queryClient = useQueryClient();
 
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
-  const [status, setStatus] = useState<EpisodeStatus>('active');
-  const [onsetDate, setOnsetDate] = useState<Date | null>(null);
+  const [name, setName] = useState(existing?.name ?? '');
+  const [category, setCategory] = useState(existing?.category ?? '');
+  const [status, setStatus] = useState<EpisodeStatus>(existing?.status ?? 'active');
+  const [onsetDate, setOnsetDate] = useState<Date | null>(
+    existing?.onsetDate ? new Date(existing.onsetDate + 'T00:00:00') : null
+  );
   const [showPicker, setShowPicker] = useState(false);
-  const [statusNote, setStatusNote] = useState('');
+  const [statusNote, setStatusNote] = useState(existing?.currentStatusNote ?? '');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSave = name.trim().length > 0 && !!petId && !saving;
+  const canSave = name.trim().length > 0 && !!petId && !saving && !deleting;
 
   const handleSave = async () => {
     if (!canSave || !petId) return;
     setSaving(true);
     setError(null);
     try {
-      await insertEpisode({
-        petId,
+      const payload = {
         name: name.trim(),
         category: category.trim() || null,
         status,
         onsetDate: onsetDate ? dateToInput(onsetDate) : null,
         currentStatusNote: statusNote.trim() || null,
-      });
+      };
+      if (isEditing && id) {
+        await updateEpisode(id, payload);
+      } else {
+        await insertEpisode({ petId, ...payload });
+      }
       await queryClient.invalidateQueries({ queryKey: ['episodes', 'pet', petId] });
       router.back();
     } catch (e) {
@@ -54,13 +67,50 @@ export default function AddEpisode() {
     }
   };
 
+  const doDelete = async () => {
+    if (!id) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await deleteEpisode(id);
+      await queryClient.invalidateQueries({ queryKey: ['episodes', 'pet', petId] });
+      router.back();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not delete this condition.');
+      setDeleting(false);
+    }
+  };
+
+  const handleDelete = () => {
+    if (Platform.OS === 'web') {
+      // @ts-ignore - web-only global
+      if (typeof window !== 'undefined' && window.confirm('Delete this condition? This cannot be undone.')) {
+        doDelete();
+      }
+      return;
+    }
+    Alert.alert('Delete this condition?', 'This cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: doDelete },
+    ]);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row items-center gap-3 px-4 pt-2 pb-3 border-b border-gray-100">
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Feather name="arrow-left" size={22} color="#2C2C2A" />
-        </Pressable>
-        <Text className="text-base font-semibold text-gray-900">Add a condition</Text>
+      <View className="flex-row items-center justify-between gap-3 px-4 pt-2 pb-3 border-b border-gray-100">
+        <View className="flex-row items-center gap-3">
+          <Pressable onPress={() => router.back()} hitSlop={10}>
+            <Feather name="arrow-left" size={22} color="#2C2C2A" />
+          </Pressable>
+          <Text className="text-base font-semibold text-gray-900">
+            {isEditing ? 'Edit condition' : 'Add a condition'}
+          </Text>
+        </View>
+        {isEditing && (
+          <Pressable onPress={handleDelete} hitSlop={10} disabled={deleting}>
+            <Feather name="trash-2" size={18} color="#991B1B" />
+          </Pressable>
+        )}
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6" contentContainerStyle={{ gap: 16, paddingBottom: 24 }}>
@@ -171,9 +221,9 @@ export default function AddEpisode() {
           onPress={handleSave}
           className={`flex-row items-center justify-center gap-2 py-3.5 rounded-2xl ${canSave ? 'bg-amber-600' : 'bg-gray-200'}`}
         >
-          <Feather name="plus" size={16} color={canSave ? 'white' : '#9CA3AF'} />
+          <Feather name={isEditing ? 'check' : 'plus'} size={16} color={canSave ? 'white' : '#9CA3AF'} />
           <Text className={`font-semibold ${canSave ? 'text-white' : 'text-gray-400'}`}>
-            {saving ? 'Saving…' : 'Save condition'}
+            {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save condition'}
           </Text>
         </Pressable>
       </View>
