@@ -13,7 +13,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
 
   const canSendCode = email.trim().length > 3 && email.includes('@');
-  const canVerify = code.trim().length >= 6;
+  const canVerify = code.trim().length >= 4;
 
   const handleSendCode = async () => {
     setBusy(true);
@@ -83,15 +83,15 @@ export default function Login() {
         ) : (
           <View className="gap-3">
             <Text className="text-xs text-gray-500">
-              We sent a 6-digit code to {email}. Enter it below.
+              We sent a code to {email}. Enter it below.
             </Text>
             <TextInput
               value={code}
               onChangeText={setCode}
-              placeholder="123456"
+              placeholder="12345678"
               placeholderTextColor="#6B7280"
               keyboardType={Platform.OS === 'web' ? 'default' : 'number-pad'}
-              maxLength={6}
+              maxLength={10}
               className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900 tracking-widest"
             />
             {error && <Text className="text-xs text-red-600">{error}</Text>}
