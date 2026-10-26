@@ -5,6 +5,7 @@ import { useMedications, insertMedication, MedicationRow } from '@/lib/queries/u
 import { useActivePet } from '@/context/active-pet';
 import { describeFrequency, FrequencyType } from '@/lib/medications/frequency';
 import { parseDose, formatDose } from '@/lib/medications/parseDose';
+import { todayInput as today } from '@/lib/dates/format';
 
 // Matches the product's provenance requirement: every record needs to know
 // whether it was entered by the owner or extracted from a document.
@@ -86,8 +87,6 @@ const fromRow = (row: MedicationRow): ConfirmedMedication => ({
     frequencyInterval: row.frequencyInterval,
   },
 });
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 export function MedicationDraftProvider({ children }: { children: ReactNode }) {
   const { session, isMockSession } = useAuth();

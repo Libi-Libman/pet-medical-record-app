@@ -13,6 +13,7 @@ import { useActivePet } from '@/context/active-pet';
 import { usePetAge } from '@/lib/dates/usePetAge';
 import { useEpisodes, isActiveEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
 import { useEvents } from '@/lib/queries/useEvents';
+import { todayInput } from '@/lib/dates/format';
 
 const episodeCardStatus = (status: EpisodeStatus): 'recovering' | 'chronic' =>
   status === 'active' ? 'recovering' : 'chronic';
@@ -40,7 +41,7 @@ export default function HomeScreen() {
       if (draftMeds.length > 0) clearDraftMeds();
     }, [draftMeds.length, clearDraftMeds])
   );
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayInput();
   // Discontinued medications (end_date already passed) shouldn't linger on
   // the daily checklist — vet-summary already applies this same filter for
   // "current medications", Home just never did.

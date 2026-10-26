@@ -8,10 +8,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth';
 import { useActivePet } from '@/context/active-pet';
 import { insertPet, updatePet, deletePet } from '@/lib/queries/useOwnerPets';
+import { toDateInput as dateToInput } from '@/lib/dates/format';
 
 const SPECIES_OPTIONS = ['Dog', 'Cat', 'Other'];
 
-const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function AddPet() {
@@ -54,7 +54,7 @@ export default function AddPet() {
     setMicrochipNumber(existing.microchipNumber ?? '');
   }, [existing]);
 
-  const canSave = name.trim().length > 0 && !!sex && !saving && !deleting;
+  const canSave = name.trim().length > 0 && !!sex && !saving && !deleting && (isEditing || !!session);
 
   const invalidatePets = async () => {
     if (session) {
@@ -79,7 +79,8 @@ export default function AddPet() {
       if (isEditing && id) {
         await updatePet(id, payload);
       } else {
-        await insertPet(payload);
+        if (!session) throw new Error('You need to be signed in to add a pet.');
+        await insertPet(session.user.id, payload);
       }
       await invalidatePets();
       router.back();

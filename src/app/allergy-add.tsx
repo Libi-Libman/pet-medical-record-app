@@ -7,9 +7,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActivePet } from '@/context/active-pet';
 import { useAllergies, insertAllergy, updateAllergy, deleteAllergy } from '@/lib/queries/useAllergies';
+import { toDateInput as dateToInput } from '@/lib/dates/format';
 
 const SEVERITY_OPTIONS = ['Mild', 'Moderate', 'Severe'];
-const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function AddAllergy() {

@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActivePet } from '@/context/active-pet';
 import { useEpisodes } from '@/lib/queries/useEpisodes';
+import { toDateInput as dateToInput } from '@/lib/dates/format';
 import {
   useEvents,
   useEpisodeEventLinks,
@@ -25,7 +26,6 @@ const TYPE_OPTIONS: { value: EventType; label: string }[] = [
   { value: 'appointment', label: 'Appointment' },
 ];
 
-const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 
 export default function AddEvent() {
   const { id, type: initialType, episodeId: initialEpisodeId } = useLocalSearchParams<{

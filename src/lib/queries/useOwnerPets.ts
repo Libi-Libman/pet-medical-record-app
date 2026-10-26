@@ -28,18 +28,32 @@ export const useOwnerPets = () => {
   });
 };
 
-export const insertPet = async (input: {
-  name: string;
-  species: string;
-  breed: string | null;
-  sex: 'male' | 'female' | null;
-  sterilized: boolean;
-  birthDate: string | null;
-  microchipNumber: string | null;
-}): Promise<OwnerPet> => {
+// `ownerId` is required and sent explicitly on every insert. The original
+// plan (supabase/rls-policies.sql) was to have Postgres fill `owner_id` in
+// automatically via `alter column owner_id set default auth.uid()`, but a
+// live QA pass (Oct 24, 2026) found inserting a new pet failing with a 403
+// — the RLS insert policy (`with check (auth.uid() = owner_id)`) rejects
+// the row because no default ever populated `owner_id`, whether that's
+// because the migration was never actually run against the live project or
+// something else reset it. Rather than re-diagnose the SQL side blind,
+// the app now sets `owner_id` itself at insert time — this satisfies the
+// same RLS policy regardless of whether the column default exists.
+export const insertPet = async (
+  ownerId: string,
+  input: {
+    name: string;
+    species: string;
+    breed: string | null;
+    sex: 'male' | 'female' | null;
+    sterilized: boolean;
+    birthDate: string | null;
+    microchipNumber: string | null;
+  }
+): Promise<OwnerPet> => {
   const { data, error } = await supabase
     .from('pets')
     .insert({
+      owner_id: ownerId,
       name: input.name,
       species: input.species,
       breed: input.breed,

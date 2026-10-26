@@ -11,6 +11,7 @@ import { useContacts } from '@/lib/queries/useContacts';
 import { useMedications } from '@/lib/queries/useMedications';
 import { formatDose } from '@/lib/medications/parseDose';
 import { describeFrequency } from '@/lib/medications/frequency';
+import { toDateInput } from '@/lib/dates/format';
 
 const formatDate = (iso: string) =>
   new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -24,8 +25,8 @@ export default function VetSummary() {
 
   const { data: events } = useEvents(pet?.id);
   const today = new Date();
-  const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const todayStr = today.toISOString().split('T')[0];
+  const ninetyDaysAgo = toDateInput(new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000));
+  const todayStr = toDateInput(today);
   const recentEvents = (events ?? [])
     .filter((e) => e.date >= ninetyDaysAgo && e.date <= todayStr)
     .sort((a, b) => b.date.localeCompare(a.date))

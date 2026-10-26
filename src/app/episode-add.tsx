@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useActivePet } from '@/context/active-pet';
 import { useEpisodes, insertEpisode, updateEpisode, deleteEpisode, EpisodeStatus } from '@/lib/queries/useEpisodes';
+import { toDateInput as dateToInput } from '@/lib/dates/format';
 
 const STATUS_OPTIONS: { value: EpisodeStatus; label: string }[] = [
   { value: 'active', label: 'Active · being treated' },
@@ -15,7 +16,6 @@ const STATUS_OPTIONS: { value: EpisodeStatus; label: string }[] = [
   { value: 'resolved', label: 'Resolved' },
 ];
 
-const dateToInput = (date: Date) => date.toISOString().split('T')[0];
 
 export default function AddEpisode() {
   const { id } = useLocalSearchParams<{ id?: string }>();

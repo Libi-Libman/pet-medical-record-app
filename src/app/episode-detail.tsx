@@ -8,6 +8,7 @@ import { useEvents, useEpisodeEventLinks, EventRow } from '@/lib/queries/useEven
 import { useMedications } from '@/lib/queries/useMedications';
 import { formatDose } from '@/lib/medications/parseDose';
 import { describeFrequency } from '@/lib/medications/frequency';
+import { todayInput } from '@/lib/dates/format';
 
 const statusLabel: Record<EpisodeStatus, string> = {
   active: 'Active · being treated',
@@ -170,7 +171,7 @@ export default function EpisodeDetail() {
             <Text className="text-xs text-neutral-400">No medications linked to this condition yet.</Text>
           ) : (
             episodeMeds.map((m) => {
-              const isActive = !m.endDate || m.endDate >= new Date().toISOString().split('T')[0];
+              const isActive = !m.endDate || m.endDate >= todayInput();
               return (
                 <View
                   key={m.id}

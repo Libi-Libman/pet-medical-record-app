@@ -9,6 +9,7 @@ import { useMedicationDraft } from '@/context/medication-draft';
 import { useAuth } from '@/context/auth';
 import { useActivePet } from '@/context/active-pet';
 import { insertEvent } from '@/lib/queries/useEvents';
+import { toDateInput, todayInput } from '@/lib/dates/format';
 
 
 export default function QuickAddCapture() {
@@ -41,7 +42,7 @@ export default function QuickAddCapture() {
         await insertEvent({
           petId,
           type: 'note',
-          date: date.toISOString().split('T')[0],
+          date: toDateInput(date),
           clinicName: null,
           notes: note.trim(),
           diagnosis: null,
@@ -115,8 +116,8 @@ export default function QuickAddCapture() {
               // @ts-ignore - raw HTML input, web only
               <input
                 type="date"
-                value={date.toISOString().split('T')[0]}
-                max={new Date().toISOString().split('T')[0]}
+                value={toDateInput(date)}
+                max={todayInput()}
                 onChange={(e: any) => {
                   const [y, m, d] = e.target.value.split('-').map(Number);
                   setDate(new Date(y, m - 1, d));
@@ -173,7 +174,7 @@ export default function QuickAddCapture() {
           <Pressable
             onPress={() =>
               router.push(
-                `/quick-add/add-medication?from=capture&date=${date.toISOString().split('T')[0]}`
+                `/quick-add/add-medication?from=capture&date=${toDateInput(date)}`
               )
             }
             className="flex-1 flex-row items-center justify-center gap-2 rounded-xl px-3 py-3 border bg-purple-50 border-purple-200"
