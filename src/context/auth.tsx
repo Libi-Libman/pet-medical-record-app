@@ -16,8 +16,10 @@ type AuthContextType = {
   session: Session | null;
   loading: boolean;
   isMockSession: boolean;
-  sendCode: (email: string) => Promise<{ error: string | null }>;
-  verifyCode: (email: string, code: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
+  completePasswordReset: (newPassword: string) => Promise<{ error: string | null }>;
   signInAsMockUser: () => void;
   signOut: () => Promise<void>;
 };
@@ -43,18 +45,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  // Passwordless sign-in: email a 6-digit code (no deep-link / redirect handling needed,
-  // which is what makes magic-link auth annoying on native).
-  const sendCode = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true },
+  // Password-based account creation. If your Supabase project has "Confirm
+  // email" turned on (Authentication settings), signUp succeeds but returns
+  // no session until the person clicks the confirmation link in their inbox
+  // — needsConfirmation tells the UI to show that message instead of
+  // treating this as already signed in.
+  const signUp = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    return { error: error?.message ?? null, needsConfirmation: !error && !data.session };
+  };
+
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  };
+
+  // Sends a password-reset email with a link back into the app
+  // (petapp://reset-password). The link carries short-lived recovery
+  // tokens; reset-password.tsx turns them into a real session.
+  const requestPasswordReset = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'petapp://reset-password',
     });
     return { error: error?.message ?? null };
   };
 
-  const verifyCode = async (email: string, code: string) => {
-    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
+  // Called from reset-password.tsx once a recovery session is active.
+  const completePasswordReset = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     return { error: error?.message ?? null };
   };
 
@@ -74,7 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, loading, isMockSession, sendCode, verifyCode, signInAsMockUser, signOut }}
+      value={{
+        session,
+        loading,
+        isMockSession,
+        signUp,
+        signIn,
+        requestPasswordReset,
+        completePasswordReset,
+        signInAsMockUser,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,58 +1,78 @@
 import { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useAuth } from '@/context/auth';
 
+type Mode = 'signin' | 'signup' | 'forgot';
+
 export default function Login() {
-  const { sendCode, verifyCode, signInAsMockUser } = useAuth();
-  const [step, setStep] = useState<'email' | 'code'>('email');
+  const { signIn, signUp, requestPasswordReset, signInAsMockUser } = useAuth();
+  const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resent, setResent] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  // A real (if simple) email shape check rather than just "contains an @
-  // sign and is more than 3 characters", which let through obviously
-  // malformed addresses before ever hitting Supabase.
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const canSendCode = EMAIL_PATTERN.test(email.trim());
-  const canVerify = code.trim().length >= 4;
+  const emailValid = EMAIL_PATTERN.test(email.trim());
+  const passwordValid = password.length >= 8;
+  const canSignIn = emailValid && password.length > 0;
+  const canSignUp = emailValid && passwordValid && password === confirmPassword;
+  const canRequestReset = emailValid;
 
-  const handleSendCode = async () => {
-    setBusy(true);
+  const resetMessages = () => {
     setError(null);
-    const { error } = await sendCode(email.trim());
-    setBusy(false);
-    if (error) {
-      setError(error);
-      return;
-    }
-    setStep('code');
+    setNotice(null);
   };
 
-  const handleVerify = async () => {
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    resetMessages();
+    setPassword('');
+    setConfirmPassword('');
+  };
+
+  const handleSignIn = async () => {
     setBusy(true);
-    setError(null);
-    const { error } = await verifyCode(email.trim(), code.trim());
+    resetMessages();
+    const { error } = await signIn(email.trim(), password);
     setBusy(false);
     if (error) setError(error);
     // On success, the auth state listener updates the session and the root layout
     // redirects away from /login automatically.
   };
 
-  const handleResend = async () => {
+  const handleSignUp = async () => {
     setBusy(true);
-    setError(null);
-    setResent(false);
-    const { error } = await sendCode(email.trim());
+    resetMessages();
+    const { error, needsConfirmation } = await signUp(email.trim(), password);
     setBusy(false);
     if (error) {
       setError(error);
       return;
     }
-    setResent(true);
+    if (needsConfirmation) {
+      setNotice('Account created. Check your email to confirm it, then come back and sign in.');
+      setMode('signin');
+      setPassword('');
+      setConfirmPassword('');
+    }
+    // If no confirmation is required, the auth state listener signs the person in directly.
+  };
+
+  const handleRequestReset = async () => {
+    setBusy(true);
+    resetMessages();
+    const { error } = await requestPasswordReset(email.trim());
+    setBusy(false);
+    if (error) {
+      setError(error);
+      return;
+    }
+    setNotice('Check your email for a link to reset your password.');
   };
 
   return (
@@ -64,79 +84,137 @@ export default function Login() {
           </View>
           <Text className="text-lg font-semibold text-gray-900">Pet medical record</Text>
           <Text className="text-xs text-gray-500 text-center">
-            Sign in to see your pets' records
+            {mode === 'signup'
+              ? 'Create an account to keep your pets’ records'
+              : mode === 'forgot'
+                ? 'Reset your password'
+                : 'Sign in to see your pets’ records'}
           </Text>
         </View>
 
-        {step === 'email' ? (
-          <View className="gap-3">
+        <View className="gap-3">
+          <View>
+            <Text className="text-xs text-gray-500 mb-1">Email</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor="#6B7280"
+              autoCapitalize="none"
+              autoComplete="email"
+              keyboardType="email-address"
+              className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900"
+            />
+          </View>
+
+          {mode !== 'forgot' && (
             <View>
-              <Text className="text-xs text-gray-500 mb-1">Email</Text>
+              <Text className="text-xs text-gray-500 mb-1">Password</Text>
               <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
+                value={password}
+                onChangeText={setPassword}
+                placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}
                 placeholderTextColor="#6B7280"
+                secureTextEntry
                 autoCapitalize="none"
-                autoComplete="email"
-                keyboardType="email-address"
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                 className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900"
               />
             </View>
-            {error && <Text className="text-xs text-red-600">{error}</Text>}
+          )}
+
+          {mode === 'signup' && (
+            <View>
+              <Text className="text-xs text-gray-500 mb-1">Confirm password</Text>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Re-enter your password"
+                placeholderTextColor="#6B7280"
+                secureTextEntry
+                autoCapitalize="none"
+                autoComplete="new-password"
+                className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900"
+              />
+              {password.length > 0 && !passwordValid && (
+                <Text className="text-xs text-amber-700 mt-1">Password must be at least 8 characters.</Text>
+              )}
+              {confirmPassword.length > 0 && password !== confirmPassword && (
+                <Text className="text-xs text-red-600 mt-1">Passwords don't match.</Text>
+              )}
+            </View>
+          )}
+
+          {error && <Text className="text-xs text-red-600">{error}</Text>}
+          {notice && <Text className="text-xs text-green-700">{notice}</Text>}
+
+          {mode === 'signin' && (
             <Pressable
-              disabled={!canSendCode || busy}
-              onPress={handleSendCode}
-              className={`items-center py-3.5 rounded-2xl ${canSendCode && !busy ? 'bg-blue-600' : 'bg-gray-200'}`}
+              disabled={!canSignIn || busy}
+              onPress={handleSignIn}
+              className={`items-center py-3.5 rounded-2xl ${canSignIn && !busy ? 'bg-blue-600' : 'bg-gray-200'}`}
             >
               {busy ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className={`font-semibold ${canSendCode ? 'text-white' : 'text-gray-400'}`}>
-                  Send code
-                </Text>
+                <Text className={`font-semibold ${canSignIn ? 'text-white' : 'text-gray-400'}`}>Sign in</Text>
               )}
             </Pressable>
-          </View>
-        ) : (
-          <View className="gap-3">
-            <Text className="text-xs text-gray-500">
-              We sent a code to {email}. Enter it below.
-            </Text>
-            <TextInput
-              value={code}
-              onChangeText={setCode}
-              placeholder="12345678"
-              placeholderTextColor="#6B7280"
-              keyboardType={Platform.OS === 'web' ? 'default' : 'number-pad'}
-              maxLength={10}
-              className="bg-gray-50 rounded-xl px-3 py-2.5 text-sm text-gray-900 tracking-widest"
-            />
-            {error && <Text className="text-xs text-red-600">{error}</Text>}
+          )}
+
+          {mode === 'signup' && (
             <Pressable
-              disabled={!canVerify || busy}
-              onPress={handleVerify}
-              className={`items-center py-3.5 rounded-2xl ${canVerify && !busy ? 'bg-blue-600' : 'bg-gray-200'}`}
+              disabled={!canSignUp || busy}
+              onPress={handleSignUp}
+              className={`items-center py-3.5 rounded-2xl ${canSignUp && !busy ? 'bg-blue-600' : 'bg-gray-200'}`}
             >
               {busy ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className={`font-semibold ${canVerify ? 'text-white' : 'text-gray-400'}`}>
-                  Verify & sign in
+                <Text className={`font-semibold ${canSignUp ? 'text-white' : 'text-gray-400'}`}>
+                  Create account
                 </Text>
               )}
             </Pressable>
-            {resent && (
-              <Text className="text-xs text-green-700 text-center">Sent a new code to {email}.</Text>
-            )}
-            <Pressable onPress={handleResend} disabled={busy}>
-              <Text className="text-xs text-blue-700 text-center">Resend code</Text>
+          )}
+
+          {mode === 'forgot' && (
+            <Pressable
+              disabled={!canRequestReset || busy}
+              onPress={handleRequestReset}
+              className={`items-center py-3.5 rounded-2xl ${canRequestReset && !busy ? 'bg-blue-600' : 'bg-gray-200'}`}
+            >
+              {busy ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className={`font-semibold ${canRequestReset ? 'text-white' : 'text-gray-400'}`}>
+                  Send reset link
+                </Text>
+              )}
             </Pressable>
-            <Pressable onPress={() => setStep('email')} disabled={busy}>
-              <Text className="text-xs text-blue-700 text-center">Use a different email</Text>
+          )}
+
+          {mode === 'signin' && (
+            <>
+              <Pressable onPress={() => switchMode('forgot')} disabled={busy}>
+                <Text className="text-xs text-blue-700 text-center">Forgot password?</Text>
+              </Pressable>
+              <Pressable onPress={() => switchMode('signup')} disabled={busy}>
+                <Text className="text-xs text-blue-700 text-center">Don't have an account? Create one</Text>
+              </Pressable>
+            </>
+          )}
+          {mode === 'signup' && (
+            <Pressable onPress={() => switchMode('signin')} disabled={busy}>
+              <Text className="text-xs text-blue-700 text-center">Already have an account? Sign in</Text>
             </Pressable>
-          </View>
-        )}
+          )}
+          {mode === 'forgot' && (
+            <Pressable onPress={() => switchMode('signin')} disabled={busy}>
+              <Text className="text-xs text-blue-700 text-center">Back to sign in</Text>
+            </Pressable>
+          )}
+        </View>
 
         {__DEV__ && (
           <Pressable onPress={signInAsMockUser} className="items-center py-2">
