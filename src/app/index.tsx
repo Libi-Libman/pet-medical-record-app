@@ -8,7 +8,6 @@ import { SectionHeader } from '@/components/section-header';
 import { QuickActionButton } from '@/components/quick-action-button';
 import { ConditionCard } from '@/components/condition-card';
 import { MedicationRow } from '@/components/medication-row';
-import { useAuth } from '@/context/auth';
 import { useMedicationDraft } from '@/context/medication-draft';
 import { useActivePet } from '@/context/active-pet';
 import { usePetAge } from '@/lib/dates/usePetAge';
@@ -28,7 +27,6 @@ const formatEventDate = (iso: string) =>
   new Date(iso + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
 export default function HomeScreen() {
-  const { signOut } = useAuth();
   const { medications: allMedications, draftMeds, clearDraftMeds } = useMedicationDraft();
 
   // A medication that was added to a capture or "Add a medication" flow
@@ -76,8 +74,8 @@ export default function HomeScreen() {
           <Text className="text-xs text-neutral-400">Good morning</Text>
           <View className="flex-row items-center gap-4">
             <Feather name="bell" size={18} color="#0C447C" />
-            <Pressable onPress={signOut} hitSlop={10}>
-              <Feather name="log-out" size={18} color="#6B7280" />
+            <Pressable onPress={() => router.push('/settings')} hitSlop={10}>
+              <Feather name="settings" size={18} color="#6B7280" />
             </Pressable>
           </View>
         </View>

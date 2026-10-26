@@ -28,6 +28,7 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="settings" />
         <Stack.Screen name="episode-detail" />
         <Stack.Screen name="episode-add" />
         <Stack.Screen name="event-add" />
