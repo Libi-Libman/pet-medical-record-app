@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
 import { supabase } from '@/lib/supabase';
 
 // A fully-fake session for local development only, so the app can be built
@@ -64,9 +65,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // (petapp://reset-password). The link carries short-lived recovery
   // tokens; reset-password.tsx turns them into a real session.
   const requestPasswordReset = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'petapp://reset-password',
-    });
+    // Linking.createURL builds the right redirect for whatever we're
+    // actually running on: an http(s) URL back to the dev/web server when
+    // testing on web (the only platform testable so far), or the app's
+    // own petapp:// scheme once a real native build exists. Hardcoding
+    // 'petapp://reset-password' here was a real bug — on web that link
+    // doesn't resolve to anything, so the reset screen never saw valid
+    // recovery tokens and showed "invalid or expired" regardless of
+    // whether the link itself was actually still good.
+    const redirectTo = Linking.createURL('reset-password');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
     return { error: error?.message ?? null };
   };
 
