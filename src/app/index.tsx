@@ -1,6 +1,7 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { SectionHeader } from '@/components/section-header';
@@ -85,8 +86,12 @@ export default function HomeScreen() {
           onPress={() => router.push('/pet-list')}
           className="mb-4 flex-row items-center gap-3"
         >
-          <View className="h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-            <MaterialCommunityIcons name="paw" size={26} color="#92400E" />
+          <View className="h-14 w-14 items-center justify-center rounded-full bg-amber-100 overflow-hidden">
+            {pet?.photoUrl ? (
+              <Image source={{ uri: pet.photoUrl }} style={{ width: 56, height: 56 }} contentFit="cover" />
+            ) : (
+              <MaterialCommunityIcons name="paw" size={26} color="#92400E" />
+            )}
           </View>
           <View className="flex-1">
             {petsLoading ? (
@@ -156,9 +161,16 @@ export default function HomeScreen() {
               No medications added yet — use "Add a medication" below.
             </Text>
           )}
-          {medications.map((med) =>
-            med.reminder.frequencyType === 'as_needed' ? (
-              <MedicationRow key={med.id} name={`${med.name} ${med.dose}`} time="As needed" taken={false} />
+          {medications.map((med) => {
+            const onPress = () => router.push({ pathname: '/medication-edit', params: { id: med.id } });
+            return med.reminder.frequencyType === 'as_needed' ? (
+              <MedicationRow
+                key={med.id}
+                name={`${med.name} ${med.dose}`}
+                time="As needed"
+                taken={false}
+                onPress={onPress}
+              />
             ) : med.reminder.times.length > 0 ? (
               med.reminder.times.map((time) => (
                 <MedicationRow
@@ -166,12 +178,19 @@ export default function HomeScreen() {
                   name={`${med.name} ${med.dose}`}
                   time={time}
                   taken={false}
+                  onPress={onPress}
                 />
               ))
             ) : (
-              <MedicationRow key={med.id} name={`${med.name} ${med.dose}`} time={med.frequency} taken={false} />
-            )
-          )}
+              <MedicationRow
+                key={med.id}
+                name={`${med.name} ${med.dose}`}
+                time={med.frequency}
+                taken={false}
+                onPress={onPress}
+              />
+            );
+          })}
           <Pressable
             onPress={() => router.push('/quick-add/add-medication')}
             className="flex-row items-center gap-2 py-2"

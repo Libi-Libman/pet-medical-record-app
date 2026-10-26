@@ -1,6 +1,7 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 
 import { usePetAge } from '@/lib/dates/usePetAge';
 import { OwnerPet } from '@/types/owner-pet';
@@ -21,7 +22,11 @@ export const PetCard = ({ pet, active = false, onPress, onEdit }: Props) => {
       style={[styles.card, active && styles.cardActive]}
     >
       <View style={styles.icon}>
-        <MaterialCommunityIcons name="paw" size={26} color="#92400E" />
+        {pet.photoUrl ? (
+          <Image source={{ uri: pet.photoUrl }} style={styles.photo} contentFit="cover" />
+        ) : (
+          <MaterialCommunityIcons name="paw" size={26} color="#92400E" />
+        )}
       </View>
 
       <View style={{ flex: 1 }}>
@@ -68,6 +73,11 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  photo: {
+    width: 56,
+    height: 56,
   },
   name: {
     color: 'rgb(23 23 23)',

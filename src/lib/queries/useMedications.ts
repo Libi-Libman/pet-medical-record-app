@@ -83,3 +83,39 @@ export const insertMedication = async (input: {
   if (error) throw error;
   return data as unknown as MedicationRow;
 };
+
+export const updateMedication = async (
+  id: string,
+  input: {
+    name: string;
+    dose: number | null;
+    doseUnit: string | null;
+    frequencyType: FrequencyType;
+    frequencyInterval: number | null;
+    reminderTimes: string[];
+    endDate: string | null;
+  }
+): Promise<MedicationRow> => {
+  const { data, error } = await supabase
+    .from('medications')
+    .update({
+      name: input.name,
+      dose: input.dose,
+      dose_unit: input.doseUnit,
+      frequency_type: input.frequencyType,
+      frequency_interval: input.frequencyInterval,
+      reminder_times: input.reminderTimes,
+      end_date: input.endDate,
+    })
+    .eq('id', id)
+    .select(SELECT_COLUMNS)
+    .single();
+
+  if (error) throw error;
+  return data as unknown as MedicationRow;
+};
+
+export const deleteMedication = async (id: string): Promise<void> => {
+  const { error } = await supabase.from('medications').delete().eq('id', id);
+  if (error) throw error;
+};

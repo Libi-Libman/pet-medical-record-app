@@ -118,3 +118,33 @@ export const deletePet = async (id: string): Promise<void> => {
     throw error;
   }
 };
+// Pet photo upload (QA finding #4: pets have had a `photo_url` column all
+// along but no UI ever wrote to it). Web-only for now -- this app is still
+// tested web-only (see claude/context-handoff.md), and a raw `<input
+// type="file">` needs no new native dependency, unlike a real native image
+// picker would. Requires the `pet-photos` Storage bucket + policies from
+// supabase/pet-photos-storage.sql to have been run -- without that, this
+// will fail with a bucket-not-found or RLS error, same as the pets-table
+// 403 that prompted explicitly setting owner_id elsewhere in this file.
+const PHOTO_BUCKET = 'pet-photos';
+
+export const uploadPetPhoto = async (
+  ownerId: string,
+  petId: string,
+  file: File
+): Promise<string> => {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${ownerId}/${petId}.${ext}`;
+  const { error: uploadError } = await supabase.storage
+    .from(PHOTO_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type || undefined });
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+};
+
+export const setPetPhotoUrl = async (petId: string, photoUrl: string | null): Promise<void> => {
+  const { error } = await supabase.from('pets').update({ photo_url: photoUrl }).eq('id', petId);
+  if (error) throw error;
+};

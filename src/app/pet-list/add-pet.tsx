@@ -7,7 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth';
 import { useActivePet } from '@/context/active-pet';
-import { insertPet, updatePet, deletePet } from '@/lib/queries/useOwnerPets';
+import { insertPet, updatePet, deletePet, uploadPetPhoto, setPetPhotoUrl } from '@/lib/queries/useOwnerPets';
 import { toDateInput as dateToInput } from '@/lib/dates/format';
 
 const SPECIES_OPTIONS = ['Dog', 'Cat', 'Other'];
@@ -33,6 +33,12 @@ export default function AddPet() {
   );
   const [showPicker, setShowPicker] = useState(false);
   const [microchipNumber, setMicrochipNumber] = useState(existing?.microchipNumber ?? '');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(existing?.photoUrl ?? null);
+  // Web-only for now (see uploadPetPhoto) -- holds a freshly-picked file
+  // until save, when it actually uploads.
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,9 +58,11 @@ export default function AddPet() {
     setSterilized(existing.sterilized);
     setBirthDate(existing.birthDate ? new Date(existing.birthDate + 'T00:00:00') : null);
     setMicrochipNumber(existing.microchipNumber ?? '');
+    setPhotoUrl(existing.photoUrl ?? null);
   }, [existing]);
 
-  const canSave = name.trim().length > 0 && !!sex && !saving && !deleting && (isEditing || !!session);
+  const canSave =
+    name.trim().length > 0 && !!sex && !saving && !deleting && !uploadingPhoto && (isEditing || !!session);
 
   const invalidatePets = async () => {
     if (session) {
@@ -76,12 +84,28 @@ export default function AddPet() {
         birthDate: birthDate ? dateToInput(birthDate) : null,
         microchipNumber: microchipNumber.trim() || null,
       };
-      if (isEditing && id) {
-        await updatePet(id, payload);
+      let petId = id;
+      if (isEditing && petId) {
+        await updatePet(petId, payload);
       } else {
         if (!session) throw new Error('You need to be signed in to add a pet.');
-        await insertPet(session.user.id, payload);
+        const created = await insertPet(session.user.id, payload);
+        petId = created.id;
       }
+
+      // A newly-picked photo only uploads at save time -- for a brand new
+      // pet there's no id to build the storage path from until the insert
+      // above returns one.
+      if (photoFile && petId && session) {
+        setUploadingPhoto(true);
+        try {
+          const url = await uploadPetPhoto(session.user.id, petId, photoFile);
+          await setPetPhotoUrl(petId, url);
+        } finally {
+          setUploadingPhoto(false);
+        }
+      }
+
       await invalidatePets();
       router.back();
     } catch (e) {
@@ -140,6 +164,52 @@ export default function AddPet() {
       </View>
 
       <ScrollView className="flex-1 px-4 pt-6" contentContainerStyle={{ gap: 16, paddingBottom: 24 }}>
+        <View className="items-center">
+          <Text className="text-xs text-gray-500 mb-2 self-start">Photo</Text>
+          <View className="h-24 w-24 rounded-full bg-gray-100 items-center justify-center overflow-hidden border border-gray-200">
+            {photoPreview || photoUrl ? (
+              // eslint-disable-next-line jsx-a11y/alt-text -- web-only raw <img>, matches the raw <input> pattern used for date/time fields elsewhere
+              <img
+                src={photoPreview ?? photoUrl ?? undefined}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              <Feather name="camera" size={22} color="#9CA3AF" />
+            )}
+          </View>
+          {Platform.OS === 'web' ? (
+            <View className="mt-2 items-center gap-1">
+              {/* @ts-ignore - raw HTML input, web only (this app is web-only for now; see src/lib/queries/useOwnerPets.ts's uploadPetPhoto) */}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e: any) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setPhotoFile(file);
+                  setPhotoPreview(URL.createObjectURL(file));
+                }}
+                style={{ fontSize: 12 }}
+              />
+              {(photoPreview || photoUrl) && (
+                <Pressable
+                  onPress={() => {
+                    setPhotoFile(null);
+                    setPhotoPreview(null);
+                    setPhotoUrl(null);
+                  }}
+                >
+                  <Text className="text-xs text-red-700">Remove photo</Text>
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <Text className="mt-2 text-xs text-gray-400 text-center">
+              Photo upload isn't available on this device yet -- add one from the web version for now.
+            </Text>
+          )}
+        </View>
+
         <View>
           <Text className="text-xs text-gray-500 mb-1">Name</Text>
           <TextInput
@@ -285,7 +355,7 @@ export default function AddPet() {
         >
           <Feather name={isEditing ? 'check' : 'plus'} size={16} color={canSave ? 'white' : '#9CA3AF'} />
           <Text className={`font-semibold ${canSave ? 'text-white' : 'text-gray-400'}`}>
-            {saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save pet'}
+            {uploadingPhoto ? 'Uploading photo…' : saving ? 'Saving…' : isEditing ? 'Save changes' : 'Save pet'}
           </Text>
         </Pressable>
       </View>
